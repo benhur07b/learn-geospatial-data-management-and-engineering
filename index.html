@@ -107,6 +107,46 @@
       box-shadow: 0 2px 12px rgba(12, 35, 64, 0.10);
     }
 
+    /* workbook cards use a div wrapper; the main link fills the rest */
+    .card-main-link {
+      display: flex;
+      align-items: stretch;
+      flex: 1;
+      text-decoration: none;
+      color: inherit;
+      min-width: 0;
+    }
+
+    .card-data-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 20px;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: #2e7d52;
+      background: #f0f8f3;
+      border-left: 1.5px solid #c8e6d4;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .card-data-link:hover {
+      background: #2e7d52;
+      color: #fff;
+    }
+
+    .card-data-link .data-icon {
+      font-size: 16pt;
+      line-height: 1;
+    }
+
     .card-accent {
       width: 6px;
       flex-shrink: 0;
@@ -353,36 +393,82 @@
 
   <div class="section-label">Workbooks</div>
     <div class="card-grid">
-      <!-- Example workbook cards — replace href and title as needed -->
+      <!-- Workbook card templates — uncomment and fill in href, data-href, and title.
+           Use class="card-badge pdf", "doc", or "web" to match the file type.  -->
 
-      <!-- <a class="card workbook" href="workbook/workbook-01.pdf" target="_blank">
-        <div class="card-accent"></div>
-        <div class="card-body">
-          <div class="card-meta">Workbook 01</div>
-          <div class="card-title">Workbook Title <span class="card-badge pdf">PDF</span></div>
-        </div>
-        <div class="card-arrow">&#8594;</div>
-      </a>
+      <div class="card workbook">
+        <a class="card-main-link" href="workbooks/01.1-intro-to-databases-sql[bnhr].pdf" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">WORKBOOK 01.1</div>
+            <div class="card-title">Introduction to Databases and SQL<span class="card-badge pdf"> PDF</span></div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-data-link" href="https://drive.google.com/drive/folders/19YrZ-TM0Yp6tXVwf2tEeoAlk69chY0tQ?usp=drive_link" target="_blank" rel="noopener">
+          <span class="data-icon">&#128193;</span>Data
+        </a>
+      </div>
+
+      <div class="card workbook">
+        <a class="card-main-link" href="workbooks/01.2-intro-to-postgis[bnhr].pdf" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">WORKBOOK 01.2</div>
+            <div class="card-title">Introduction to PostGIS & Spatial Databases<span class="card-badge pdf"> PDF</span></div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-data-link" href="https://drive.google.com/drive/folders/19YrZ-TM0Yp6tXVwf2tEeoAlk69chY0tQ?usp=drive_link" target="_blank" rel="noopener">
+          <span class="data-icon">&#128193;</span>Data
+        </a>
+      </div>
      
+      <div class="card workbook">
+        <a class="card-main-link" href="workbooks/00-multi-user-environments-with-postgis-geoserver-and-qgis[bnhr].pdf" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">WORKBOOK 99</div>
+            <div class="card-title">Open Geospatial in Multi-user & Enterprise environments<span class="card-badge pdf"> PDF</span></div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-data-link" href="https://drive.google.com/drive/folders/1PrCujubwUFiZhJl7RABxh1F5-V7BnxGk?usp=drive_link" target="_blank" rel="noopener">
+          <span class="data-icon">&#128193;</span>Data
+        </a>
+      </div>
 
-      <a class="card workbook" href="workbook/workbook-01.docx" target="_blank">
-        <div class="card-accent"></div>
-        <div class="card-body">
-          <div class="card-meta">Workbook 01</div>
-          <div class="card-title">Workbook Title <span class="card-badge doc">DOC</span></div>
-        </div>
-        <div class="card-arrow">&#8594;</div>
-      </a>
-     
+      <!-- DOC workbook:
+      <div class="card workbook">
+        <a class="card-main-link" href="workbook/workbook-01.docx" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">Workbook 01</div>
+            <div class="card-title">Workbook Title <span class="card-badge doc">DOC</span></div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-data-link" href="data/workbook-01/" target="_blank" rel="noopener">
+          <span class="data-icon">&#128193;</span>Data
+        </a>
+      </div>
+      -->
 
-      <a class="card workbook" href="workbook/workbook-01.html" target="_blank" rel="noopener">
-        <div class="card-accent"></div>
-        <div class="card-body">
-          <div class="card-meta">Workbook 01</div>
-          <div class="card-title">Workbook Title <span class="card-badge web">Web</span></div>
-        </div>
-        <div class="card-arrow">&#8594;</div>
-      </a> -->
+      <!-- Web workbook:
+      <div class="card workbook">
+        <a class="card-main-link" href="workbook/workbook-01.html" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">Workbook 01</div>
+            <div class="card-title">Workbook Title <span class="card-badge web">Web</span></div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-data-link" href="data/workbook-01/" target="_blank" rel="noopener">
+          <span class="data-icon">&#128193;</span>Data
+        </a>
+      </div>
+      -->
      
     </div>
 
