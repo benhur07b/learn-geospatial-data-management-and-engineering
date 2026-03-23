@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Introduction | Learn Geospatial Data Management & Engineering w/ BNHR</title>
+  <title>Sharing spatial data | Learn Geospatial Data Management & Engineering w/ BNHR</title>
   <link rel="icon" href="https://raw.githubusercontent.com/benhur07b/learn-python/refs/heads/main/favicon.ico">
+
 
   <!-- Reveal.js (CDN) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
@@ -12,9 +13,6 @@
 
   <!-- Syntax highlighting -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
-
-  <!-- CopyCode plugin -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-copycode/plugin/copycode/copycode.css">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -715,310 +713,732 @@
 <img src="https://learn-qgis.bnhr.xyz/_astro/bnhr-2024-fordarkbg-main.ByHOdlyC.png" class="title-logo" alt="BNHR">
 <p class="project-context">philippine statistics authority · geospatial data management & engineering</p>
 
-<h1><span style="color: var(--bnhr-accent-orange); !important">introduction</span><br>to the training</h1>
+<h1>from storage <br>to <span style="color: var(--bnhr-accent-green); !important">sharing</span></h1>
 
-<!-- <p class="subtitle">Day 1 Morning · 9:00–12:00</p> -->
+<!-- <p class="subtitle">Day 2 Morning — GeoServer and OGC Services</p> -->
 <p class="url">bnhr.xyz</p>
+
 ---
 
 <!-- .slide: class="toc-slide" -->
 ## Contents
 
-1. What We Are Building
-2. The Open Geospatial Stack
-3. How This Training Works
-4. Three Personas, One Room
-5. The Week Ahead
-6. What Is Expected of You
+1. The Sharing Problem
+2. OGC Services
+3. GeoServer
+4. Demo
+5. Beyond GeoServer
+
+---
+
+## Retrieval practice
+
+*Without looking at your notes:*
+
+Name the **three storage systems** from yesterday.
+
+For each one — when would you use it, and when wouldn't you?
+
+Note:
+No slides for this. Put the prompt on the board. 2 min individual write, then cold-call 3–4 people. 2–3 min correction only — not a re-teach. Expected: PostGIS (OLTP, multi-user, GeoServer backend), DuckDB (OLAP, local analytical queries, no server), Apache Sedona (distributed, national-scale data lakes).
 
 ---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<h1>what <span style="color: var(--bnhr-accent-green)">we</span><br>are building</h1> 
+# The Sharing<br>Problem
 
 ---
 
-## By Day 5, you will have a better understanding on how to...
+## PostGIS is the single source of truth — now how does everyone access it?
 
-- Store, share, and manage your geospatial data;
-- Build applications on top of your data such as dashboards and webmaps;
-- **ALL USING TOOLS THAT YOU WILL OWN**
-
-
-*We will also look at how we can replace your current ArcGIS Online webmap and migrate from your current proprietary setup to a more open geospatial stack.* 
-
-**Every exercise this week is a step toward it.**
-
-Note:
-The dashboard isn't a separate capstone task added to the end of the week. Every afternoon lab produces one piece of it. By Day 5, those pieces combine into a working system. Participants who understand the destination are more motivated to complete each intermediate step.
-
----
-
-## Each day adds one layer — and each layer builds on the one before
-
-<bnhr-pipeline caption="PostGIS: store + query | GeoServer: publish WMS/WFS | GeoNode: catalog + metadata | Applications: web maps + dashboards | Cloud Native: future-looking">
-PostGIS, GeoServer, GeoNode, Applications, Cloud Native
-</bnhr-pipeline>
-
-Note:
-PostGIS stores it. GeoServer shares it. GeoNode catalogs it. Applications make it usable. Cloud native distributes it. Each day's output is the input to the next day. Participants who fall behind on Day 2 will feel it on Day 3 — the cumulative structure is the main reason to keep up.
-
----
-
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<h1>the <span style="color: var(--bnhr-accent-blue)">open<br>geospatial</span> stack</h1>
-
----
-
-## Every ArcGIS Online component has an open equivalent — and you will build it
-
-<div class="compact">
-
-| ArcGIS Online | Open replacement | Day |
-|---|---|---|
-| Hosted feature layers | PostGIS + GeoServer WFS | 1–2 |
-| WMS tile services | GeoServer WMS | 2 |
-| Portal / data catalog | GeoNode | 3 |
-| AGOL web map | MapLibre or Leaflet web map | 4 |
-| AGOL dashboards | Streamlit or Observable | 4 |
-| Cloud hosting (ESRI-managed) | Self-hosted Docker stack | All |
-| Partner data distribution | COG, PMTiles, GeoParquet | 5 |
-
-</div>
-
-Note:
-This migration mapping runs through every day. When a new tool is introduced, it always starts from the AGOL component it replaces. The conceptual mapping is 1:1 — only the URLs and the license fees are different.
-
----
-
-## bring your own data (byod)
-
-- We'll provide sample data during the demos and exercises but we encourage you to **bring your own data**. 
-
-- That way, the data you query, publish, and map this week is the same data your division works with every day.
-
-Note:
-No placeholder data. The exercises feel applicable to daily work because they are. Participants with a specific dataset they want to migrate should name it during the pre-training needs assessment — the facilitator will reference it in demos.
-
----
-
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<h1>how this<br>training <span style="color: var(--bnhr-accent-purple)">works</span></h1>
-
----
-
-## 30% concepts, 70% hands-on — because you learn tools by using them
-
-- Every concept is **followed immediately by hands-on exercises**
-- **The problem comes first** — the tool is the means to solve it
-- **Debugging errors is learning time** — built into the schedule, not a sign of failure
-
-Note:
-This ratio is deliberate. You do not learn geospatial software by watching it. The mental model consolidates when you apply it yourself, hit a real error, and work through it. Problem-first sequencing means participants always know why they are learning the tool before being shown how.
-
----
-
-## Every module follows the same arc — from watching to doing independently
-
-<bnhr-pipeline highlight="We Do" caption="I Do: watch and ask questions | We Do: follow along step by step | You Do: independent and parallel exercises">
-I Do, We Do, You Do
-</bnhr-pipeline>
-
-**Do not skip the We Do phase.** It is the bridge that makes the independent lab accessible.
-
-Note:
-The We Do phase is where most in-session learning happens. Fast learners help their neighbours — explaining consolidates their own understanding. Slower learners catch up before the independent lab begins. Jumping from demo straight to independent lab is the most common cause of labs falling apart.
-
----
-
-## Every morning is a shared plenary — all three groups, together
-
-<div class="compact">
-
-| Time | Block | What happens |
-|---|---|---|
-| 9:00–9:15 | Retrieval practice | Written recall from previous day — no notes |
-| 9:15–10:15 | Lecture | Concepts and foundation-building |
-| 10:15–10:30 | Traffic light + break | Check-in & self-assessment |
-| 10:30–11:10 | Demo (I Do) | Facilitator demonstrates |
-| 11:10–11:50 | Workshop (We Do) | Guided practice — follow along step by step |
-| 11:50–12:00 | Debrief + exit ticket | Check-in & self-assessment |
-
-</div>
-
-Note:
-Mornings are shared across all three personas. The traffic light check-in at 10:15 is the facilitator's adjustment mechanism — if the room is mostly red on a concept, the demo pacing changes. The exit ticket is read before the afternoon session begins and shapes how the facilitator opens the debrief.
-
----
-
-## Afternoons split by persona — same theme, different tasks, one debrief
-
-| Group | Afternoon focus |
+| Option | Problem |
 |---|---|
-| **Builders/Infrastructure** | Deploy, configure, script, and build applications |
-| **Custodians/Administrators** | Govern and manage data, permissions, and metadata |
-| **Users/Developers** | Query, consume services, and build maps or dashboards |
-
-All groups reconvene at **16:40** to share what they built and what questions came up.
-
-*The split is not a separation—**it's a deepening and an opportunity for cross-personal learning***—Builders hear what Users need from the server; Managers hear what Builders are creating;
+| Email a shapefile | Back to version chaos — which copy is current? |
+| Give DB credentials | Security risk; requires PostgreSQL client; no styling |
+| Export to shared drive | Shapefile chaos, round two |
+| **GeoServer** | Live data, styleable, access-controlled, standard endpoints |
 
 Note:
-The split is not a separation — it's a deepening. Same morning concepts, applied through each role's lens. The 16:40 reconvergence is often where the most interesting cross-persona learning happens — Builders hear what Users need from the server; Managers hear what metadata Builders are skipping.
+Callback to Day 1's shapefile chaos. PostGIS solved the storage problem. This slide sets up why GeoServer is the next necessary piece.
 
 ---
 
-## Day 2+ starts with retrieval practice — no notes, ten minutes, cold call
+## GeoServer sits between the database and the world
 
-*One prompt on the board. Write what you can remember. No notes, no slides.*
+<bnhr-pipeline highlight="GeoServer">PostGIS, GeoServer, any GIS client</bnhr-pipeline>
 
-The act of trying to remember—even partially—strengthens memory more than re-reading your notes.
+- **PostGIS** — holds the authoritative data
+- **GeoServer** — translates it to OGC service languages (WMS, WFS, WMTS)
+- **Any GIS client** — QGIS, MapLibre, Leaflet, ArcGIS all speak those languages
 
 Note:
-Example prompts: "Write the SQL for a spatial join on two PostGIS tables" or "Name the three OGC service types GeoServer publishes." The facilitator corrects and clarifies in 3–4 minutes. Even partial recall during the exercise strengthens memory more than passive review — this is why the exercise runs even when participants feel uncertain.
+The key message: GeoServer is not a database and not a client — it's a translation layer. Data lives in PostGIS; consumers speak OGC. GeoServer bridges them.
 
 ---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<h1><span style="color: var(--bnhr-accent-orange)">three personas</span>,<br>one room</h1>
+# OGC Services
 
 ---
 
-## Builders — deploy, configure, and build the structural foundations of the stack
+## Three services share spatial data three different ways
 
-- Deploy PostGIS, GeoServer, and GeoNode
-- Support Custodians and Users
-- Publish cloud native formats: PMTiles, GeoParquet, STAC
-
-*technical backbone of the team. comfortable with the servers and the command line.*
-
-Note:
-Builders are the technical backbone. Everything Managers and Users rely on in the afternoon labs depends on Builders having deployed and configured the stack correctly. On Day 1, Builders should be the first to confirm the Docker stack is running.
-
----
-
-## Custodians and Administrators — govern the stack and the data it holds
-
-- Design and document data schema and naming conventions
-- Configure user roles, permissions, and access policies
-- Manage metadata workflows for ISO-standard catalog records
-- Draft a cloud native data distribution policy for partner agencies
-
-*moderate technical background. comfortable with admin UIs.*
-
-Note:
-Managers are the governance layer. What they configure determines who can publish data, who can access it, and how it's described in the catalog. Their work is invisible when done well and catastrophic when skipped.
-
----
-
-## Users and developers — connect to the stack and create from it
-
-- Connect QGIS to PostGIS and query data directly
-- Consume WMS and WFS services from GeoServer in existing workflows
-- Use GeoNode to find, preview, and download datasets
-- Build a web map or analytical dashboard on the open stack
-
-*geospatial-literate. operations, projects, and applications.*
-
-Note:
-Users are the audience that makes the stack worthwhile. Their workflows define what the stack needs to support. On Day 1, Users' questions about QGIS connectivity are often the clearest signal of whether the Builders' PostGIS setup is working.
-
----
-
-## Each persona owns a different part of the stack in the afternoon
-
-<bnhr-heatmap columns="Deploy, Configure, Govern, Analyze, Build, Distribute">
-Builders: ●, ●, , , ●, ●
-Managers: , ●, ●,●,, ●
-Users: , , , ●, ●, ●
-</bnhr-heatmap>
-
-*This shows **focus areas** (i.e. primary responsibilities not exclusive ownership).*
-
-Note:
-The heatmap shows afternoon focus areas — primary responsibility, not exclusive ownership. All personas attend the same morning sessions. Day 5 Distribute column involves all three: Builders generate the formats, Managers set the policy, Users consume the assets.
-
----
-
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-# The Week<br>Ahead
-
----
-
-## Five days, five layers — each building on the last
-
-<div class="compact">
-
-| Day | Morning topic | Afternoon |
+| Service | Returns | Use case |
 |---|---|---|
-| **Day 1** | Storing Spatial Data — PostGIS & Others | Deploy stack · Schema design · QGIS queries |
-| **Day 2** | Sharing Data — GeoServer and OGC | Configure GeoServer · Permissions · Consume WMS/WFS |
-| **Day 3** | Geospatial Catalog — GeoNode | Deploy GeoNode · User & data management · Use & consumption |
-| **Day 4** | Application Layer — Web Maps & Dashboards | **Track A:** web map · **Track B:** dashboard |
-| **Day 5** | Cloud Native Geospatial | Cloud native publish · Distribution policy · STAC |
-
-</div>
+| **WMS** — Web Map Service | Rendered image (PNG/JPEG) | Display a styled map layer |
+| **WFS** — Web Feature Service | Raw features (GeoJSON, GML) | Download or query geometries and attributes |
+| **WMTS** — Web Map Tile Service | Pre-cached map tiles | Fast background layers for web maps |
 
 Note:
-Day 4 afternoon is the exception to the persona split — participants choose Track A or B based on what they want to build, not their role. Both tracks are previewed in the Day 4 morning session so the choice is informed.
+These are the three services participants will encounter repeatedly in the rest of the training. The distinction between WMS (picture) and WFS (data) is the most important one to reinforce.
 
 ---
 
-## Day 4 afternoon is a self-selected track — not a persona split
+## WMS gives you a picture; WFS gives you the data
 
 <div class="two-column">
 <div class="column">
-<div class="column-header">Track A — Geospatial Apps</div>
+<div class="column-header">WMS — a picture</div>
 
-Build an interactive web map.
+Rendered PNG/JPEG from the server
 
-Tools: MapLibre GL JS · Leaflet · React
+Server applies the style — you see it, you don't own it
+
+Can identify features (click to inspect)
+
+*Use for:* dashboards, map backgrounds, overlays
+
+*PSA example:* show where aquafarms are located
 
 </div>
 <div class="column">
-<div class="column-header">Track B — Data Dashboards</div>
+<div class="column-header">WFS — the data</div>
 
-Build an analytical dashboard (not necessarily spatial).
+Raw features: GeoJSON, GML, GeoPackage
 
-Tools: Streamlit · Observable Framework · Evidence
+Full attributes, filterable, sortable, exportable
+
+Can join, analyse, re-style in QGIS
+
+*Use for:* analysis, downloads, spatial joins
+
+*PSA example:* download aquafarm geometries for analysis
 
 </div>
 </div>
 
 Note:
-Track selection happens at the end of the Day 4 morning session — after both demo tracks are previewed. Participants who want maps AND charts will typically self-select Track A — the mapping is the harder skill to add later. Both tracks produce a capstone output that works with the PSA open stack.
+This distinction is where most confusion lands. Reinforce with the PSA examples — participants immediately recognize the use cases from their own work.
 
 ---
 
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<h1>expectations</h1>
+## OGC means any client can consume the same endpoint
 
----
+| Client | How it connects |
+|---|---|
+| QGIS | Add WMS/WFS Layer (built-in) |
+| ArcGIS Desktop / Pro | Add OGC server connection |
+| MapLibre GL JS | WMS raster source / WFS via fetch |
+| Leaflet | `L.tileLayer.wms()` |
 
-## Three things to verify
-
-- **Builders:** Are you familiar with docker?
-- **Users:** Do you have QGIS and Python installed?
-- **Everyone:** Know your persona. [**Complete the self-assessment quiz**](../quiz/self-assessment.html).
-
-If your setup isn't working, don't hesitate to let us know!
-
----
-
-## Four norms for the week
-
-1. **Be present in the mornings** — morning concepts power the afternoon labs
-2. **Attempt before asking** — read the error, try one fix, then ask for help
-3. **Use your neighbour** — think-pair-share moments are deliberate, not optional
-4. **Answer the check-ins honestly** — they help shape what comes next
+One service URL. No proprietary format. No vendor SDK required.
 
 Note:
-Frame these as professional norms, not rules. Exit tickets only work if participants engage honestly — reassure them that "I'm confused" is a valid and valuable answer.
+This is the core migration argument. AGOL locks you into Esri clients. OGC services work everywhere. The same GeoServer endpoint that QGIS uses today is the same one the MapLibre web app uses on Day 5.
 
 ---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<h1>let's <span style="color: var(--bnhr-accent-green);">build</span><br>something.</h1>
+# GeoServer
+
+---
+
+## GeoServer replaces every ArcGIS Online service component
+
+<div class="compact">
+
+| ArcGIS Online | GeoServer |
+|---|---|
+| Hosted feature layer | PostGIS table published as WFS |
+| Feature layer rendering | WMS with SLD style |
+| Tile layer / basemap | WMTS via GeoWebCache |
+| Service URL in web map | WMS/WFS endpoint in MapLibre / Leaflet |
+| Item sharing (org / public) | Workspace security rules |
+
+</div>
+
+Note:
+Draw this parallel explicitly at every step during the demo. Participants who have used AGOL will anchor the new concept immediately. Those who haven't get the concrete contrast.
+
+---
+
+## The migration path: AGOL to open stack in five steps
+
+<bnhr-pipeline highlight="PostGIS, GeoServer"
+  caption="AGOL export: download as shapefile or GeoJSON | convert: convert and load into PostGIS | PostGIS: single source of truth | GeoServer: publish as OGC web service | web map: MapLibre / Leaflet consumes endpoints">
+  AGOL export, convert, PostGIS, GeoServer, web map
+</bnhr-pipeline>
+
+Note:
+Days 1–2 cover the first four steps. Days 4–5 complete the pipeline with the web map. By Day 5 the full path is live.
+
+---
+
+## GeoServer has four concepts — know these before opening the UI
+
+- **Workspace** — namespace/container for related layers (e.g. `psa` for all PSA AFCD layers)
+- **Data store** — connection to a data source (PostGIS database, shapefile directory, GeoTIFF)
+- **Layer** — published dataset with a declared CRS, bounding box, and at least one style
+- **Style (SLD)** — Styled Layer Descriptor XML that controls how the layer renders
+
+Note:
+Show this slide before opening the GeoServer UI. These four terms map directly to the four left-nav items participants will see. Pre-loading the mental model reduces cognitive load when they see the interface.
+
+---
+
+## Every publish has four parts
+
+<bnhr-pipeline>Workspace, Data Store, Layer, Style</bnhr-pipeline>
+
+Create or select the workspace → connect the data source → publish the table → assign a style
+
+Note:
+This sequence is the same whether publishing palay_distribution, aquafarms, or any other layer. Once participants have run through it once in the demo, the pattern is theirs.
+
+---
+
+## Workspaces make the governance policy operational
+
+- `psa` — all AFCD layers, authenticated users only
+- `psa_public` — cleared for open access (boundaries, admin units)
+- `psa_internal` — restricted to named roles, not surfaced publicly
+
+Access control is now a service rule, not a file permission.
+
+Note:
+Connect to the governance angle Managers care about. The division-level data policy (who can see what) becomes a GeoServer workspace security rule — not a manual process of deciding who to email.
+
+---
+
+## Style in QGIS, export as SLD — don't write XML from scratch
+
+1. Style the layer in QGIS (graduated colours on `total_yield`, 5 classes)
+2. Layer Properties → Symbology → **Style → Save Style → SLD file**
+3. GeoServer → Styles → Add new style → upload `.sld` → Validate → Submit
+4. Layers → `palay_distribution` → Publishing tab → Default Style → select → Save
+
+SLD XML is a transport format. QGIS is the authoring tool.
+
+Note:
+Reassure participants that SLD authoring is not about hand-writing XML. The QGIS export path is the standard workflow. The XML is what GeoServer reads — not what we write.
+
+---
+
+## Traffic light check-in
+
+<div class="two-column split-2-1">
+<div>
+
+*Before we move to the demo:*
+
+1. I can explain the difference between WMS and WFS.
+2. I understand how GeoServer sits between PostGIS and the end user.
+3. I understand how this replaces ArcGIS Online services.
+4. I can name the four parts of the GeoServer publishing process.
+5. I understand why workspaces matter for governance.
+6. I understand the different ways to style layers in GeoServer.
+
+**Green** = confident &nbsp;|&nbsp; **Yellow** = mostly &nbsp;|&nbsp; **Red** = still unclear
+
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+
+<img src="../static/img/traffic-check-in.png" alt="Traffic light check-in QR code" style="max-width:100%;max-height:420px;">
+
+</div>
+</div>
+
+Note:
+Hands or sticky notes. If more than 1/3 of the room is red or yellow on items 1 or 2, take 3 minutes to clarify before starting the demo. Structural confusion at this point compounds.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# demo
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# Deploying<br>GeoServer
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# Publishing<br>a PostGIS Layer
+
+---
+
+## Step 1 — Create or select a workspace
+
+Data → Workspaces → Add new workspace
+
+| Field | Value |
+|---|---|
+| Name | `psa` |
+| Namespace URI | `http://psa.gov.ph/geoserver/psa` |
+
+Note:
+The namespace URI doesn't need to resolve to a real URL — it just needs to be unique. Using the PSA domain makes it recognizable. This is the container all future PSA layers will live in.
+
+---
+
+## Step 2 — Create PostGIS data store
+
+Data → Stores → Add new store → PostGIS
+
+<div class="compact">
+
+| Parameter | Value |
+|---|---|
+| Workspace | `psa` |
+| Data Source Name | `psa_postgis` |
+| host | `postgis` |
+| port | `5432` |
+| database | `gisdb` |
+| user / password | `geoserver_user` / `geoserver_pass` |
+
+</div>
+
+Save → **Test Connection**
+
+Note:
+The host is `postgis` — the Docker service name, not `localhost`. This is the most common connection error. If Test Connection fails, check the container name with `docker ps`.
+
+---
+
+## Step 3 — Publish a layer
+
+Data → Layers → Add a new layer → select `psa:psa_postgis` → find `palay_distribution` → Publish
+
+- **Coordinate Reference Systems:** Declared SRS → `EPSG:4326`
+- **Bounding Boxes:** Compute from data (click both buttons)
+- **Save**
+
+Preview: Data → Layer Preview → `psa:palay_distribution` → OpenLayers
+
+Note:
+Narrate: "I'm not copying any data. GeoServer reads live from PostGIS. If someone updates the PostGIS table, the WMS reflects it immediately — single source of truth, all the way to the endpoint." Show both the OpenLayers preview (WMS) and the GML output (WFS raw features).
+
+---
+
+## Your service endpoints
+
+```
+WMS   http://localhost:8080/geoserver/<workspace>/wms
+WFS   http://localhost:8080/geoserver/<workspace>/wfs
+
+```
+Note:
+These are the base URLs. Every WMS or WFS request starts here. Participants will use them in Demo Parts 2 and 3 and in the afternoon lab. Losing the URL is the most common friction point — whiteboard is more reliable than a slide.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# Styling and <br>Previewing
+
+---
+
+## Style in QGIS, import the SLD into GeoServer
+
+1. In QGIS, add `palay_distribution` via WFS → style by `total_yield` (graduated, 5 classes)
+2. Layer Properties → Symbology → **Style → Save Style → SLD file** → `palay_yield.sld`
+3. GeoServer → **Styles → Add new style** → Name: `palay_yield`, Workspace: `psa`
+4. Upload `palay_yield.sld` → Validate → Submit
+5. Layers → `psa:palay_distribution` → **Publishing tab** → Default Style → `palay_yield` → Save
+6. Layer Preview → OpenLayers — confirm styled output
+
+Note:
+We Do phase — participants follow each step. Pause after step 2 (QGIS export) and step 4 (GeoServer import) to check the room. Common failure: importing SLD to the wrong workspace — make sure Workspace: psa is set.
+
+---
+
+## Every WMS client sends a request like this
+
+```http
+http://localhost:8080/geoserver/psa/wms
+  ?service=WMS
+  &version=1.1.1
+  &request=GetMap
+  &layers=psa:palay_distribution
+  &styles=palay_yield
+  &bbox=117,5,127,20
+  &width=800&height=600
+  &srs=EPSG:4326
+  &format=image/png
+```
+
+Change `bbox` to request a different area. Change `layers` to switch datasets.
+
+Note:
+Think-pair-share: "What would you change to request only Region II?" (bbox ~121,16,123,18). Have participants modify the URL in their browser and see the result. This is what AGOL was generating behind the scenes when you added a feature layer to a web map.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# Consuming<br>Services in QGIS
+
+---
+
+## Add WMS layer in QGIS
+
+Layer → Add Layer → **Add WMS/WMTS Layer**
+
+1. New → Name: `PSA GeoServer`
+2. URL: `http://localhost:8080/geoserver/psa/wms`
+3. Connect
+4. Expand `psa` → select `psa:palay_distribution`
+5. Add
+
+Note:
+We Do — participants follow along. Most will have added a WMS layer in QGIS before (possibly from AGOL or other sources). This connects the familiar QGIS workflow to the new self-hosted endpoint.
+
+---
+
+## Add WFS layer in QGIS
+
+Layer → Add Layer → **Add WFS Layer**
+
+1. New → Name: `PSA GeoServer WFS`
+2. URL: `http://localhost:8080/geoserver/psa/wfs`
+3. Connect
+4. Select `psa:palay_distribution`
+5. Add
+
+Note:
+Common pitfall: QGIS shows "CRS undefined" on the WFS layer if the server returns a CRS QGIS doesn't auto-detect. Fix: right-click layer → Set CRS → EPSG:4326. This is a display setting — it does not change the data.
+
+---
+
+## WMS and WFS give you different things in QGIS
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">WMS</div>
+
+Rendered map image from server
+
+Identify tool → attribute popup on click
+
+No attribute table, no export
+
+Always reflects the GeoServer style
+
+</div>
+<div class="column">
+<div class="column-header">WFS</div>
+
+Vector layer, editable in QGIS
+
+Full Attribute Table — sortable, filterable
+
+Can export to GeoPackage, Shapefile
+
+Can override style locally
+
+</div>
+</div>
+
+Both point at the same live PostGIS table.
+
+Note:
+Narrate: "WMS gives you a picture. WFS gives you the data. Both are live — neither is a copy." The footer line is the key message for this slide.
+
+---
+
+## Filter WFS by attribute and export to GeoPackage
+
+1. Attribute Table → filter icon → expression:
+
+   ```sql
+   "total_yield" > 5000
+   ```
+
+2. Right-click layer → Export → Save Features As → **GeoPackage** → `palay_high_yield.gpkg`
+
+Your export is a snapshot. The service stays live and authoritative.
+
+Note:
+Think-pair-share at the end: "What layer from your current AFCD work would you publish this way? WMS, WFS, or both?" Give 2 minutes, then cold-call 2–3 responses. This closes the loop on relevance before the exit ticket.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# sharing data<br><span style="color: var(--bnhr-accent-orange)">beyond geoserver</span>
+
+---
+
+## The sharing landscape
+
+<div class="compact">
+
+| Category | Tools |
+|---|---|
+| **Traditional servers** | GeoServer · QGIS Server · pg_tileserv · pygeoapi |
+| **Cloud-native formats** | PMTiles · COG · GeoParquet · STAC |
+| **Web clients & portals** | Leaflet · MapLibre · CKAN / DKAN |
+
+</div>
+
+All of these connect to the **same PostGIS database** or object storage. GeoServer is the right tool for WMS/WFS — others handle web tiles, analytics, and public publishing.
+
+Note:
+Use this slide to orient participants — not to teach everything on it. The point is that the stack they just learned (PostGIS → GeoServer → OGC services) is one lane of a broader road. The next slides each zoom into one tool or format.
+
+---
+
+## Vector tiles — pg_tileserv
+
+**What:** MVT (Mapbox Vector Tiles) — binary format, styled on the client, fast for web maps
+
+**How:** pg_tileserv (CrunchyData) — zero config, reads PostGIS directly
+
+**Learn:** [GitHub](https://github.com/CrunchyData/pg_tileserv) | [Documentation](https://access.crunchydata.com/documentation/pg_tileserv/latest/)
+
+```
+http://localhost:7800/psa.palay_distribution/{z}/{x}/{y}.pbf
+```
+
+**When:** Public web maps, large datasets, client-side interactivity
+
+**vs GeoServer:** No Java, no web UI — pairs with MapLibre or Leaflet for web; not a WMS/WFS replacement
+
+Note:
+pg_tileserv is part of the CrunchyData PostGIS stack. If you have PostGIS, you are one binary away from serving vector tiles. The endpoint pattern {z}/{x}/{y} is the XYZ tile standard — the same format used by OpenStreetMap.
+
+---
+
+## OGC API Features — pygeoapi
+
+**What:** REST/JSON successor to WFS — endpoints are browsable in any web browser
+
+**How:** pygeoapi — Python-based, supports OGC API Features, Tiles, Maps, Records
+
+**Learn:** [GitHub](https://github.com/geopython/pygeoapi) | [Website](https://pygeoapi.io/)
+
+```
+http://localhost:5000/collections/palay_distribution/items?limit=10
+```
+
+Returns GeoJSON. No XML. No `GetFeature` request syntax. Just a URL.
+
+**Why it matters:** OGC is replacing WFS with OGC API standards — this is what modern inter-agency APIs look like
+
+Note:
+The key shift: OGC API is RESTful and returns GeoJSON by default. Any developer can consume it with `curl` or `fetch()` — no GIS client required. pygeoapi is the most widely deployed open-source implementation.
+
+---
+
+## QGIS Server — serve what you already built
+
+**What:** Serves WMS/WFS using an existing `.qgs` project file — your QGIS styles come with it
+
+**How:** Point QGIS Server at a project file; the layer inherits QGIS symbology automatically
+
+**Learn:** [Documentation](https://docs.qgis.org/latest/en/docs/server_manual/index.html)
+```
+http://localhost/qgis?SERVICE=WMS&REQUEST=GetCapabilities&MAP=/data/psa.qgs
+```
+
+**When:** Small deployments, QGIS-heavy teams, quick publishing without re-styling
+
+**vs GeoServer:** No web UI to manage, tightly coupled to QGIS — but zero extra styling work
+
+Note:
+If your team already has QGIS projects with carefully crafted styles, QGIS Server lets you publish those directly. The trade-off: it is harder to manage at scale and does not have GeoServer's workspace/governance features.
+
+---
+
+## Cloud-native geospatial — the paradigm shift
+
+The shift from **servers** to **files:**
+
+| Old approach | Cloud-native equivalent |
+|---|---|
+| WMS tile requests | COG (Cloud-Optimized GeoTIFF) |
+| WFS feature requests | GeoParquet on object storage |
+| Vector tile server | PMTiles archive |
+| Service catalogue | STAC (catalogue as JSON) |
+
+**Key idea:** Cloud-native formats are self-describing files hosted on object storage (S3, MinIO, GCS). No server to maintain — HTTP range requests fetch only the bytes you need.
+
+Note:
+This is the conceptual core of the cloud-native shift. Instead of a server that processes requests, you have a smart file format that allows clients to ask for just the part they need. The server becomes a dumb file store; the intelligence moves into the format and the client.
+
+---
+
+## PMTiles / Protomaps — serverless tile delivery
+
+**What:** A single-file archive of vector (or raster) tiles — no tile server needed
+
+**How:** Generate pmtiles (e.g. with `tippecanoe`); host on any static server/object storage
+
+**Learn:** [GitHub](https://github.com/protomaps/PMTiles) | [Documentation](https://docs.protomaps.com/)
+
+```bash
+# Convert shapefile to json
+ogr2ogr -t_srs EPSG:4326 palay.json palay.shp
+# Create a layer in the vector tiles named "palay"
+tippecanoe -zg --projection=EPSG:4326 -o agri.pmtiles -l palay palay.json
+```
+
+Then upload `agri.pmtiles` to MinIO, S3, or a web server.
+
+**vs pg_tileserv:** pg_tileserv is dynamic (live DB queries); PMTiles is a static snapshot — both produce the same MVT format
+
+Note:
+PMTiles is ideal for distribution: one file, no moving parts. Protomaps hosts a global basemap as a single PMTiles file. For AFCD datasets that don't change daily, this is often the simplest deployment path.
+
+---
+
+## STAC — cataloguing imagery and raster assets
+
+**What:** SpatioTemporal Asset Catalog — a JSON spec for describing geospatial assets
+
+**How:** A STAC catalogue is a set of JSON files (or a STAC API) linking to assets in object storage
+
+**Learn:** [GitHub](https://github.com/radiantearth/stac-spec) | [Documentation](https://stacspec.org/en/)
+
+```json
+{
+  "id": "palay_2024_q1",
+  "bbox": [116.9, 4.6, 126.6, 20.4],
+  "assets": { "cog": { "href": "s3://psa-data/palay_2024_q1.tif", "type": "image/tiff" } }
+}
+```
+
+**When:** Raster and imagery datasets, remote sensing outputs, time-series data
+
+**Tools:** pystac, stac-fastapi, QGIS STAC Plugin, STAC Browser
+
+Note:
+STAC is how modern earth observation data (Sentinel, Landsat, Planet) is catalogued and distributed. For AFCD, this is most relevant for satellite imagery, classified land cover rasters, or any time-series raster analysis outputs.
+
+---
+
+## Data lakes — analytics-scale sharing
+
+**What:** Spatial data stored as GeoParquet / Parquet on object storage — queryable without downloading
+
+**How:** Export from PostGIS → GeoParquet; query directly with DuckDB's spatial extension
+
+```sql
+-- Query a remote GeoParquet file — no download required
+SELECT region, SUM(area_ha)
+FROM 'https://data.psa.gov.ph/palay.parquet'
+WHERE year = 2024
+GROUP BY region;
+```
+
+**When:** Large-scale analysis, data science workflows, inter-agency analytics
+
+**vs GeoServer:** Not for cartography — for compute at scale. Analysts query it; maps come from elsewhere.
+
+Note:
+GeoParquet is the columnar format for spatial data — think of it as PostGIS for analysts who don't want a running database. DuckDB reads remote Parquet files over HTTP using range requests, so you can run SQL against a file on MinIO without copying it locally.
+
+---
+
+## From service to web map — Leaflet
+
+**What:** Open-source JavaScript mapping libraries that consume GeoServer WMS, pg_tileserv MVT, and PMTiles with the same API
+<div>
+
+**WMS from GeoServer (Leaflet)**
+```js
+L.tileLayer.wms('http://localhost:8080/geoserver/psa/wms', {
+  layers: 'psa:palay_distribution',
+  format: 'image/png',
+  transparent: true
+}).addTo(map);
+```
+
+</div>
+
+---
+
+## From service to web map — MapLibre
+
+**What:** Open-source JavaScript mapping libraries that consume GeoServer WMS, pg_tileserv MVT, and PMTiles with the same API
+
+<div>
+
+**PMTiles (MapLibre)**
+```js
+map.addSource('palay', {
+  type: 'vector',
+  url: 'pmtiles://https://data.psa.gov.ph/palay.pmtiles'
+});
+```
+
+</div>
+
+**Message:** The services you published today — and the files you generate tomorrow — can all power a live web map.
+
+Note:
+~20 lines of HTML + JavaScript is all it takes to embed a live map on any government website. Both snippets point at data sources you now know how to produce. Leaflet is simpler and more approachable; MapLibre is more powerful and supports vector tile styling via a JSON style spec.
+
+---
+
+## Choosing the right tool
+
+<div class="compact">
+
+| Need | Tool |
+|---|---|
+| WMS / WFS for GIS clients | GeoServer |
+| Live vector tiles for web maps | pg_tileserv |
+| Modern REST / JSON API | pygeoapi |
+| Publish an existing QGIS project | QGIS Server |
+| Serverless tile delivery (static) | PMTiles / Protomaps |
+| Imagery and raster cataloguing | STAC + COG |
+| Analytics-scale data sharing | GeoParquet + DuckDB |
+| Embed a map on a website | Leaflet / MapLibre |
+
+</div>
+
+**All of these can point at the same PostGIS database or object storage.**
+
+Note:
+This is the take-home frame. The question is never "should we use GeoServer?" — it is "what does the consumer need?" A GIS analyst needs WMS/WFS. A web developer needs tiles or a REST API. A data scientist needs Parquet. The storage (PostGIS) stays the same; only the serving layer changes.
+
+---
+
+## Exit ticket
+
+<div class="two-column split-2-1">
+<div>
+
+*Let's check how we're doing*
+
+1. How clear was this session for you?
+2. How confident are you to try this on your own?
+3. Which topic did you find most difficult or confusing?
+4. In one word — what's your reaction to what we just covered?
+5. What is your biggest question right now?
+6. Name one geospatial dataset you currently share by emailing a file or copying from a flash drive. How would publishing it as a WMS or WFS change that workflow? What would the service URL replace?
+
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+
+<img src="../static/img/exit-ticket.png" alt="Exit ticket check-in QR code" style="max-width:100%;max-height:420px;">
+
+</div>
+</div>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# <span style="color: #ffa500">Questions?</span>
 
       </textarea>
     </section>
@@ -1037,7 +1457,6 @@ Frame these as professional norms, not rules. Exit tickets only work if particip
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/markdown/markdown.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/reveal.js-copycode/plugin/copycode/copycode.js"></script>
 
 <script>
 /**
@@ -1916,15 +2335,7 @@ customElements.define('bnhr-quadrant', BnhrQuadrant);
     transition: 'fade',
     transitionSpeed: 'fast',
     pdfSeparateFragments: false,
-    copycode: {
-      style: {
-        copybg: 'var(--bnhr-accent-orange)',
-        copiedbg: 'var(--bnhr-accent-green)',
-        copycolor: 'var(--bnhr-main-dark)',
-        copiedcolor: 'var(--bnhr-main-white)',
-      }
-    },
-    plugins: [RevealMarkdown, RevealNotes, RevealHighlight, CopyCode]
+    plugins: [RevealMarkdown, RevealNotes, RevealHighlight]
   });
 
   // Post-processor: add content-slide class to slides without an explicit type
