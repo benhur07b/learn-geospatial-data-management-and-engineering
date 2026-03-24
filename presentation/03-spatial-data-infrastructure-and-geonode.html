@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Storing spatial data and spatial databases | Learn Geospatial Data Management & Engineering w/ BNHR</title>
+  <title>Spatial Data Infrastructure & GeoNode | Learn Geospatial Data Management & Engineering w/ BNHR</title>
   <link rel="icon" href="https://raw.githubusercontent.com/benhur07b/learn-python/refs/heads/main/favicon.ico">
 
   <!-- Reveal.js (CDN) -->
@@ -13,12 +13,13 @@
   <!-- Syntax highlighting -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
 
-  <!-- CopyCode plugin -->
+    <!-- CopyCode plugin -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-copycode/plugin/copycode/copycode.css">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Roboto+Mono:wght@400;500;600;700&family=Atkinson+Hyperlegible+Next:ital,wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Roboto+Mono:wght@400;500;600;700&family=Atkinson+Hyperlegible+Next:ital,wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
 /* ===============================================================
    bnhr Reveal.js Theme — BNHR
@@ -714,334 +715,702 @@
 <img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
 <p class="project-context">philippine statistics authority · geospatial data management & engineering</p>
 
-<h1><span style="color: var(--bnhr-accent-green);">storing</span> spatial data</h1>
+<h1>an open geospatial<br><span style="color: var(--bnhr-accent-green)">data portal</span></h1>
 
-<!-- <p class="subtitle">Day 1 Morning · 9:00–12:00</p> -->
+<!-- <p class="subtitle">Day 3 Morning — GeoNode and Spatial Data Infrastructure</p> -->
 <p class="url">bnhr.xyz</p>
 
 ---
 
-## the storage problem
-
-> *"A field officer in Albay updates an aquafarm record..."*
-
-- How long does it take before it becomes part of the official dataset?
-- How many manual steps does that involve?
-- What breaks if one step is skipped?
-
-**Discuss within your group for 3-5 minutes.**
-
-Note: Pose this to the room. Let participants discuss in pairs for 2 minutes. Do not answer yet — this question frames the motivation for the entire morning.
-
----
-
+<!-- .slide: class="toc-slide" -->
 ## Contents
 
-1. **Lecture**: Beyond file-based spatial data management
-2. **Demo**: PostGIS, DuckDB & GeoParquet, Data Lakes
-3. **Workshop**: Which Storage for My Use Case?
+1. The Discovery Problem
+2. Spatial Data Infrastructure
+3. GeoNode
+4. Demo
 
-Note: 45-minute lecture (9:10–9:55), feedback + break (9:55–10:10), demo (10:10–11:00), workshop (11:00–11:50), morning debrief (11:50–12:00).
+---
+
+## Retrieval practice
+
+*Without looking at your notes:*
+
+What is the difference between **WMS** and **WFS**?
+
+Note:
+No slides. Prompt on the board. 2 min individual write, cold-call 3–4 people. 2–3 min correction only. Expected: WMS = rendered image, use for display (show where aquafarms are on a map); WFS = raw features, use for analysis/download (download aquafarm geometries for a spatial join in QGIS).
 
 ---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-# How are you<br>storing your data?
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>the discovery<br><span style="color: var(--bnhr-accent-orange);">problem</span></h1>
 
 ---
 
-## where does your data live today?
+## 50 layers in GeoServer — can you answer these questions?
 
-| ArcGIS Online | Open Replacement |
-|---|---|
-| Hosted feature layers | **PostGIS** tables |
-| WMS / WFS services | **GeoServer** |
-| Data catalog / portal | **GeoNode** |
-| AGOL dashboards | Custom web app or GeoNode |
-| Cloud hosting (ESRI-managed) | Self-hosted **Docker** stack |
+- What years does `aquafarm` cover?
+- Who collected the `mango` data?
+- Is `aquafarms` licensed for use in published reports?
+- Which layer covers only Region II?
 
-The conceptual mapping is 1:1. The migration is three steps: **export → load → publish**.
+GeoServer cannot answer any of these. It publishes data. It says nothing *about* it.
 
-This week covers every step.
-
-Note: Start from what participants already know. The goal is to make the open stack feel familiar rather than foreign — ArcGIS Online is being replaced with named open equivalents for every component they already use.
+Note:
+This is the motivation for GeoNode. PostGIS solved version chaos (Day 1). GeoServer solved sharing (Day 2). Today's question: how does anyone find the data, understand it, and know whether to trust it? Note: GeoServer does have a metadata plugin — but it is an admin-side tool, not a user-facing catalog. Users still need direct GeoServer access to read those fields, and there is no search, no browse, and no download button for end users.
 
 ---
 
-## (shape)file-based data management
+## The same gap looks different depending on your role
 
 <div class="two-column">
 <div class="column">
-<div class="column-header">Without a database</div>
+<div class="column-header">Custodian</div>
 
-- `palay_final.shp`
-- `palay_final_v2.shp`
-- `palay_2023.shp`
-- `palay_2023_corrected.shp`
-- `palay_region2_updated_jan.shp`
-- `palay_region2_updated_jan_FINAL.shp`
-- `palay_SUBMITTED_corrected.shp`
+I published 50 layers in GeoServer.
 
-*Which one is current? Nobody knows for certain.*
+But no one knows they exist.
+
+No one knows which version is current.
+
+No one knows who to call when something is wrong.
 
 </div>
 <div class="column">
-<div class="column-header">With a database</div>
+<div class="column-header">User</div>
 
-One table. One authoritative dataset.
+I found `psa:aquafarms` in GeoServer.
 
-`psa.palay_distribution`
+But I don't know what's in it.
 
-**14,382 rows**
-Last updated: 2024-11-12
-Updated by: coordinator_ramos
+I don't know if it covers my region.
 
-*No version archaeology.*
+I don't know if I can cite it in a report.
 
 </div>
 </div>
 
-Note: Pause here and ask the room: "How many of you have a folder that looks like the left side?" Most hands will go up. This is the problem that motivates everything that follows. The database does not solve this by convention — it solves it by design. There is only one table name. One dataset. Everyone queries the same rows.
+Note:
+GeoServer was built for service administrators. GeoNode was built to be the user-facing front door to the same data. Both the custodian problem (no one can find my data) and the user problem (I can't evaluate this data) are solved by the same thing: a catalog that makes layers discoverable, describable, and self-service.
 
 ---
 
-## what makes a database "spatial"?
-
-- **Geometry column** — stores points, lines, and polygons as structured data, not as text
-- **Spatial data types** — Point, LineString, Polygon, MultiPolygon (OGC WKT/WKB standard)
-- **Spatial index (GIST)** — a tree structure that makes *"find everything near X"* fast at scale
-- **Spatial functions** — `ST_Intersects`, `ST_Buffer`, `ST_Distance`, `ST_Within`, `ST_DWithin`
-
-The critical difference from a spreadsheet with a latitude column:
-
-**A spatial database can answer spatial questions efficiently.**
-
-Note: A spreadsheet with lat/lon can store locations but cannot efficiently answer "which farms are within 10 km of a road?" without scanning every row. The GIST index is what makes spatial queries fast at scale. This is the "why" behind the whole morning.
-
----
-
-## PostGIS: the production spatial database
-
-PostgreSQL + the PostGIS extension.
+## GeoNode is a catalog; GeoServer is a service endpoint
 
 <div class="compact">
 
-| Strength | What it means for AFCD |
-|---|---|
-| **Single source of truth** | One canonical table replaces dozens of versioned shapefiles on shared drives |
-| **Concurrent multi-user access** | Field officers and analysts can read and write simultaneously |
-| **ACID transactions** | No partial updates — data is always consistent |
-| **GeoServer as native client** | Publish tables directly as WMS / WFS layers |
-| **Role-based access control** | Different permissions per user group |
-
-</div>
-
-This is similar to ArcGIS Online/Enterprise's managed database.
-
-Note: Emphasize the GeoServer integration — this is what closes the loop from "data in a database" to "layer on a web map." PostGIS is the backend; GeoServer is the front door. Day 2 covers the GeoServer side.
-
----
-
-## OLTP vs OLAP: the fundamental split
-
-<div class="two-column">
-<div class="column">
-<div class="column-header">OLTP — Transactional</div>
-
-**Online Transaction Processing**
-
-Many small reads and writes.
-Concurrent users.
-Low latency per query.
-Data changes frequently.
-
-*Field data entry, web map updates, role-managed edits*
-
-**→ PostGIS**
-
-</div>
-<div class="column">
-<div class="column-header">OLAP — Analytical</div>
-
-**Online Analytical Processing**
-
-Few large reads.
-Scan millions of rows.
-Compute aggregates and joins.
-Data is mostly static.
-
-*Annual census analysis, cross-dataset reports, ad-hoc exploration*
-
-**→ DuckDB**
-
-</div>
-</div>
-
-Note: This distinction drives every storage decision in the morning. If you can identify whether a use case is OLTP or OLAP, you can pick the right tool. Most confusion about "which database should I use?" comes from mixing these two modes in one system.
-
----
-
-## when to use PostGIS — and when not to
-
-<div class="two-column">
-<div class="column">
-<div class="column-header">Use PostGIS when...</div>
-
-- Multiple users read and write concurrently
-- The team needs one authoritative source — no more "which shapefile is current?" debates
-- Data is updated regularly by field staff or coordinators
-- GeoServer WMS / WFS needs a live backend
-- Complex spatial joins across multiple layers
-- Role-based access control is required
-
-</div>
-<div class="column">
-<div class="column-header">Do NOT use PostGIS when...</div>
-
-- One analyst runs a query on a large static dataset
-- Local personal analysis by a single person
-- Columnar aggregate queries across millions of rows
-- Ad-hoc exploration where server overhead is not justified
-
-</div>
-</div>
-
-Note: The "do not use" column is as important as the "use" column. PostGIS has real overhead: a server to maintain, a schema to design, connections to manage. For many analytical workflows, that overhead is not justified. DuckDB removes it entirely.
-
----
-
-## DuckDB: in-process analytical queries
-
-No server. No configuration. No schema migration.
-Runs inside Python, the CLI, or a Jupyter notebook.
-
-| Feature | What it means |
-|---|---|
-| **Columnar storage** | Reads only the columns a query needs — fast on wide tables |
-| **Vectorized execution** | Processes batches of rows together — very fast aggregates |
-| **Native file formats** | Reads GeoParquet, GeoPackage, CSV, GeoJSON without import |
-| **In-process** | No connection overhead — the engine runs in your process |
-
-PostGIS and DuckDB are **complementary**, not competing.
-
-Note: Demonstrate that DuckDB can be started in 30 seconds with no setup — contrast this with PostGIS which requires a running server, a schema, and a connection. The complementary framing is critical: these tools often appear together in the same workflow.
-
----
-
-## PostGIS & DuckDB
-
-| | PostGIS | DuckDB |
+| Task | GeoServer | GeoNode |
 |---|---|---|
-| **Architecture** | Client-server | In-process |
-| **Workload** | OLTP — transactional | OLAP — analytical |
-| **Setup** | Server required | No setup |
-| **GeoServer-ready** | Yes | No |
-| **Concurrent writes** | Yes | No |
-| **File formats** | PostgreSQL tables | GeoParquet, GeoPackage, CSV, GeoJSON, etc. |
-| **Best for** | Live data, web map backends, multi-user | Analysis, data exploration, big data |
-
-Note: These tools often work together. PostGIS holds the live operational data; analysts periodically export to GeoParquet for DuckDB analysis. One does not replace the other — they cover different parts of the workflow.
-
----
-
-## GeoParquet: cloud-native + columnar
-
-**OGC GeoParquet** — Apache Parquet extended with spatial metadata.
-
-- Geometry stored as **WKB** in a binary Parquet column
-- File footer carries **CRS, geometry types, and bounding box** per column
-- Bounding box enables **partition pruning** — queries skip non-intersecting file sections
-
-<div class="compact">
-
-| Format | Storage | Max size | Cloud-native | Query without server |
-|---|---|---|---|---|
-| Shapefile | Row, 7 files | 2 GB | No | Yes |
-| GeoPackage | SQLite row | Depends | No | Yes |
-| PostGIS table | Row, server | No hard limit | Via container | No |
-| **GeoParquet** | **Columnar, 1 file** | **Hundreds of millions** | **Yes** | **Yes** |
+| **Browse available layers** | Layer Preview list — layer names only | Catalog with titles, thumbnails, categories |
+| **Search by keyword** | Not available for simple users | Full-text search: title, abstract, tags |
+| **Filter by region or date** | Not available | Spatial filter, date range, category filter |
+| **Metadata** | Available via plugin | Built-in as core component of the catalog |
+| **Read what the data contains** | Layer name, CRS, bounding box| Title, abstract, owner, license, revision date, other metadata |
+| **Preview before downloading** | Basic OpenLayers viewer (permitted accounts) | Interactive map preview on any resource page |
+| **Layer access** | Managed by user/group/roles | Managed by users/group |
+| **Download the data** | Via WFS | Via web UI |
 
 </div>
 
-Note: GeoParquet is the export / archive / sharing format — not a PostGIS replacement. Typical workflow: PostGIS holds live data → export to GeoParquet for analyst use or public distribution → partners query with DuckDB without needing a PostGIS connection.
+Note:
+GeoServer's Layer Preview is intended for administrators verifying that a layer published correctly — not for analysts deciding whether to use the data. GeoNode's catalog is the tool for that. Both point at the same PostGIS tables and the same GeoServer endpoints; GeoNode adds the discovery and governance layer on top.
 
 ---
 
-## Apache Sedona: distributed spatial SQL
+## Adding a layer in QGIS: GeoServer path vs GeoNode path
 
-Extends Apache Spark with spatial data types and functions — the same vocabulary (`ST_DWithin`, `ST_Distance`), executed across a cluster.
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoServer path</div>
 
-```python
-from sedona.spark import SedonaContext
+1. Get the OGC (WMS or WFS) URL from an admin
+2. Layer → Add WMS/WMTS Layer → paste URL → Connect
+3. Browse a flat list of layer names — no titles, no descriptions, no dates
+4. Add the layer — no context on what it contains or who owns it
 
-sedona = SedonaContext.create(spark)
+</div>
+<div class="column">
+<div class="column-header">GeoNode path</div>
 
-farms = sedona.read.format("geoparquet").load("s3://psa-data/palay/")
-roads = sedona.read.format("geoparquet").load("s3://psa-data/roads/")
+1. Install the QGIS GeoNode Plugin.
+2. Connect a GeoNode instance via the QGIS GeoNode plugin in the Data Source Manager.
+3. Search for a layer (e.g. `aquafarms`)
+4. Click result → read title, abstract, date, owner, license
+5. Load layer to QGIS (WMS, WFS, etc) — with full understanding of what you are adding
 
-farms.createOrReplaceTempView("farms")
-roads.createOrReplaceTempView("roads")
+</div>
+</div>
 
-result = sedona.sql("""
-  SELECT f.farm_id, f.province,
-         ST_Distance(f.geom, r.geom) AS dist_m
-  FROM farms f, roads r
-  WHERE ST_DWithin(f.geom, r.geom, 10000)
-""")
-result.write.format("geoparquet").save("s3://psa-data/output/")
+Note:
+After step 3 in both paths, the QGIS workflow is identical — you are connecting to the same GeoServer WMS endpoint. The difference is that the GeoNode path gives the user enough information to decide whether to use a layer before they add it. From a custodian's perspective, publishing through GeoNode means users arrive informed rather than blind.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>spatial data<br>infrastructure</h1>
+
+---
+
+## An SDI has five components — not just a technology stack
+
+| Component | What it is |
+|---|---|
+| **Data** | The spatial datasets — PostGIS, GeoPackages, rasters |
+| **Services** | OGC endpoints for access — WMS, WFS, WMTS from GeoServer |
+| **Metadata** | Descriptions of the data: coverage, date, owner, CRS, license |
+| **Policies** | Rules governing access, usage constraints, data retention |
+| **People** | Roles responsible for each layer: owner, custodian, admin |
+
+Note:
+An SDI is an organizational framework, not a piece of software. National examples: Philippines PhilGIS (built on GeoNode), EU INSPIRE directive, US NSDI. The key insight: PostGIS + GeoServer give you the first two components. Days 1–2 completed those. Today adds the rest.
+
+---
+
+## PostGIS and GeoServer cover two components — GeoNode completes the SDI
+
+<bnhr-heatmap columns="Data, Services, Metadata, Policies, People"
+             highlight="Metadata, Policies, People">
+  PostGIS:    x, , , ,
+  GeoServer:  , x, , ,
+  GeoNode:    x, x, x, x, x
+</bnhr-heatmap>
+
+Note:
+GeoNode doesn't replace PostGIS or GeoServer — it wraps them and adds the missing three components. Every GeoNode layer is a GeoServer layer. Every GeoNode upload goes into PostGIS.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>metadata</h1>
+
+---
+## How would you feel if you saw this
+
+| Data | Abstract |
+|---|---|
+| Aquafarm | Aquafarm data |
+| Mango | Mango data |
+
+---
+
+## Six metadata fields every PSA AFCD layer must have
+
+<div class="compact">
+
+| Field | What it captures |
+|---|---|
+| **Title** | Human-readable name — not a filename |
+| **Abstract** | What the data contains, how it was collected |
+| **Date** | Creation date and most recent revision |
+| **Spatial extent** | Bounding box — what area does this cover? |
+| **Point of contact** | Who to call if the data is wrong or unclear |
+| **License** | How the data may be used and shared |
+
+*GeoNode supports different metadata standards (e.g. ISO 19115, FGDC) and you can even create your own metadata models.*
+
+</div>
+
+Note:
+ISO 19115 is the international standard for geographic information metadata. GeoNode's metadata editor maps directly to these fields. 
+
+---
+
+## Good metadata is written for someone who has never seen the dataset
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">Bad abstract</div>
+
+`aquafarm_poly`
+
+Aquafarm data.
+
+</div>
+<div class="column">
+<div class="column-header">Good abstract</div>
+
+Polygon locations of licensed aquaculture farms in the Philippines, collected by PSA AFCD regional offices during the 2024 census cycle. Coverage: all coastal regions. Use for aquaculture planning and fisheries statistics.
+
+</div>
+</div>
+
+Note:
+Write the bad abstract first on screen, ask the room: "Would you use this data in a report? Would you trust it?" Then write the good one. The contrast is what makes the standard concrete. The good abstract answers: what, how collected, when, where, and for what purpose.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>geonode</h1>
+
+---
+
+## GeoNode adds capabilities on top of GeoServer and PostGIS
+
+- **Catalog** — searchable index of all layers, maps, and documents
+- **Upload and publish** — drag-and-drop to PostGIS + GeoServer in one step
+- **Map composer** — browser-based map builder using MapStore2
+- **Dashboards and GeoStories** — create dashboards and geostories (think storymaps)
+- **User and group management** — roles, permissions, public/private/org visibility
+- **GeoServer integration** — GeoNode controls GeoServer via its REST API; every GeoNode layer is a GeoServer layer
+
+Note:
+GeoNode is built on Django, uses GeoServer as its service backend, and stores metadata and user data in PostgreSQL. The Docker stack runs all four together.
+
+---
+
+## GeoNode replaces every ArcGIS Online portal component
+
+<div class="compact">
+
+| ArcGIS Online | GeoNode |
+|---|---|
+| Portal / item browser | GeoNode catalog (search, browse, filter) |
+| Item detail page | Resource detail page (metadata, preview, download) |
+| Hosted feature layer (upload) | Upload → auto-imported to PostGIS + GeoServer |
+| Web map | GeoNode map composer |
+| Groups and sharing settings | GeoNode groups + layer permissions |
+
+</div>
+
+Note:
+Migration path: export AGOL item → upload to GeoNode → fill metadata → set permissions → add to a GeoNode map. The WMS/WFS service URL is the same GeoServer endpoint GeoNode manages automatically.
+
+---
+
+## GeoNode connects several containers in the Docker stack
+
+- **GeoNode** (Django) — catalog, UI, user management, metadata editor
+- **GeoServer** — service backend; GeoNode controls and interacts with it
+- **PostgreSQL / PostGIS** — stores both spatial and non-spatial data
+- **Nginx** — reverse proxy: `localhost/` → GeoNode, `localhost:8080/` → GeoServer
+- **LetsEncrypt** - SSL/TLS certificates
+- **Celery** - asynchronous engine/task system
+- **Redis** (GeoNode 5.X) - Celery backend
+- **RabbitMQ** (<= GeoNode 4.X) - Celery backend
+
+Note:
+The key question participants will ask: "Is this the same GeoServer from Day 2?" Yes. GeoNode manages the same instance. Layers published directly in GeoServer are not automatically in GeoNode — they must be imported via Remote Services (shown in Demo Part 2). The recommended workflow going forward: always upload through GeoNode, not directly to GeoServer.
+
+---
+
+## One upload triggers three updates at once
+
+<bnhr-pipeline highlight="catalog"
+  caption="Upload: shapefile or GeoPackage via browser | PostGIS: auto-imported to psa schema | GeoServer: layer created on GeoServer | catalog: metadata stored, layer indexed and searchable">
+  Upload, PostGIS, GeoServer, catalog
+</bnhr-pipeline>
+
+Note:
+This is what makes GeoNode the recommended entry point for all future data. One action keeps PostGIS (the authoritative store), GeoServer (the service layer), and the catalog (the discovery layer) all in sync.
+
+---
+
+## Uploading a layer to GeoNode
+
+Resources → Upload layer → select file → Upload
+
+- **Supported formats:** GeoPackage, Shapefile (zipped), GeoJSON, KML, CSV with coordinates
+- GeoNode imports the file into **PostGIS** automatically
+- GeoNode calls the **GeoServer REST API** to publish the layer
+- The layer appears immediately in the **catalog**, the database, and GeoServer
+
+One upload — three systems updated at once.
+
+Note:
+Narrate: "I'm not opening GeoServer. I'm not running ogr2ogr. One form, one button." The progress bar shows each step — PostGIS import, GeoServer publish, catalog index. For large files (>100 MB), bulk-load via ogr2ogr into PostGIS first, then import the existing GeoServer layer via Remote Services.
+
+---
+
+## Uploading a layer: GeoNode vs GeoServer
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoNode</div>
+
+1. Resources → Upload layer
+2. Drag file → Upload
+3. Fill metadata → Save
+
+PostGIS, GeoServer, and the catalog update automatically. No GeoServer admin access needed.
+
+</div>
+<div class="column">
+<div class="column-header">GeoServer</div>
+
+1. Load data into PostGIS manually (`ogr2ogr`)
+2. Data → Stores → Add new store → PostGIS
+3. Data → Layers → Publish layer
+4. Set CRS and bounding box
+
+Layer is in GeoServer only — not in the catalog.
+
+</div>
+</div>
+
+Note:
+The GeoServer path requires four separate steps and admin access to the GeoServer UI. GeoNode collapses this into one upload form. The result in GeoServer is identical — GeoNode calls the same REST API behind the scenes — but the entry point is one screen instead of four.
+
+---
+
+## Adding a style to a layer in GeoNode
+
+On the layer resource page → Edit → Styles
+
+Two paths:
+
+- **Upload an SLD file** — style in QGIS → Layer Properties → Symbology → Style → Save as SLD → upload directly on the GeoNode layer page
+- **Use the browser style editor** — CSS-like editor for simple colour and symbol changes
+
+Set as default → the WMS service reflects the new style immediately. No GeoServer admin login required.
+
+Note:
+The QGIS → SLD export path is the standard workflow — participants have already done this in Day 2. The browser editor is useful for quick adjustments. Either way, GeoNode calls GeoServer's REST API to create and assign the style automatically.
+
+---
+
+## Adding a style: GeoNode vs GeoServer
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoNode</div>
+
+1. Open the layer resource page
+2. Edit → Styles → Upload SLD
+3. Set as default → Save
+
+Any user with edit permission can update the style — no admin access needed.
+
+WMS reflects the change immediately.
+
+</div>
+<div class="column">
+<div class="column-header">GeoServer</div>
+
+1. Styles → Add new style
+2. Upload `.sld` → Validate → Submit
+3. Layers → select layer → Publishing tab
+4. Default Style → select → Save
+
+Requires GeoServer admin access. Styles and layers are managed on separate screens.
+
+</div>
+</div>
+
+Note:
+The underlying mechanism is identical — GeoNode calls GeoServer's REST API to create and assign the style. The difference is access: GeoNode exposes style management to any authorised layer editor, without requiring GeoServer admin credentials.
+
+---
+
+## Managing permissions on GeoNode
+
+On any resource page → Edit → Permissions
+
+| Level | Who | What they can do |
+|---|---|---|
+| **Public** | Anyone, no login required | View only |
+| **Registered users** | Any logged-in user | View and download |
+| **Groups** | Named group (e.g. `afcd_staff`) | View, download, edit, manage |
+
+Individual users can also be granted permissions directly.
+
+Note:
+This maps directly to the AFCD governance framework: public layers (admin boundaries, basemaps), registered-user layers (statistical tables), group-restricted layers (aquafarm coordinates, production-sensitive data). The data custodian sets permissions directly — no admin involvement needed for routine access changes.
+
+---
+
+## Managing permissions: GeoNode vs GeoServer
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoNode</div>
+
+Per-resource permissions set on the layer page.
+
+Levels: public, registered users, named groups, individuals.
+
+Any layer owner can set permissions — no admin required.
+
+Enforced across catalog, WMS/WFS endpoints, and downloads.
+
+</div>
+<div class="column">
+<div class="column-header">GeoServer</div>
+
+Workspace- or layer-level security rules set in the admin panel.
+
+Roles mapped to `ROLE_*` entries or an external directory.
+
+Requires GeoServer admin access to configure.
+
+Enforced on WMS/WFS endpoints only — no catalog or download context.
+
+</div>
+</div>
+
+Note:
+GeoServer's security model is powerful but requires admin involvement for every change. GeoNode delegates permission management to layer owners — the person responsible for the data controls who can access it. This makes governance operational rather than procedural.
+
+---
+
+## Traffic light check-in
+
+
+<div class="two-column split-2-1">
+<div>
+  
+1. I can name all five components of a Spatial Data Infrastructure.
+2. I understand why metadata is needed for data to be discoverable and trustworthy.
+3. I understand how GeoNode connects to GeoServer and PostGIS.
+4. I can describe what happens in the system when I upload a file through GeoNode.
+5. I can upload and style a layer in GeoNode.
+6. I understand how GeoNode permissions work.
+
+**Green** = confident &nbsp;|&nbsp; **Yellow** = mostly &nbsp;|&nbsp; **Red** = still unclear
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+
+<img src="../static/img/traffic-check-in.png" alt="Traffic light check-in QR code" style="max-width:100%;max-height:420px;">
+
+</div>
+</div>
+
+
+Note:
+Hands or sticky notes. If more than 1/3 of the room is red or yellow on statement 3 (architecture connection), trace the four-container diagram before opening the demo. Statement 4 checks pipeline comprehension — re-run the upload slide if needed. Statements 5–6 are the governance angle; if red, revisit the permissions slide before Demo Part 2.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | builders</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>deploy geonode<br>with docker</h1>
+
+---
+
+## Before you start — what you need
+
+- **Git** — to clone the project
+- **Docker** (v20+) and **Docker Compose** — to run the containers
+- **Python 3** — to generate the `.env` configuration file
+- ~**4 GB RAM** free for the Docker containers
+- **Port 80** available — Nginx will bind to it
+
+Check Docker is running before proceeding: `docker info`
+
+Note:
+If port 80 is in use by another web server, stop it first or change NGINX_BASE_URL in the .env file. Compose v2 is bundled with Docker Desktop; on Linux install it separately with `apt install docker-compose-plugin`.
+
+---
+
+## Step 1 — Clone geonode-project
+
+```bash
+git clone https://github.com/GeoNode/geonode-project.git -b [your_branch]
+cd geonode-project
 ```
 
-Note: Ask the room: "Does AFCD need this today?" Expected answer: no. Then reframe: "When would you need it? Think about a national crop monitoring program pulling from Sentinel-2 every 10 days — 7,000 tiles per pass, multiple years. That is when you reach for Sedona."
+- `geonode-project` is a ready-to-deploy Django project wired up with Docker Compose. Clone it, configure it, and run it — no scaffolding needed.
+
+- You can change which version of GeoNode you want to build by changing the `[your branch]` part of the git clone command. 
+
+- **NOTE:** different versions may have different installation instructions. For this exercise, we will be using the `master` branch so you can remove the -b [your_branch] part when running git clone.
+
+- **For production**, fork the repo to your own organisation first so you can rename the folder and version-control your configuration. For this training, cloning directly is fine.
 
 ---
 
-## the three-tier storage hierarchy
+## The .env file holds all configuration
 
-| Tier | Tool | When to use |
+`create-envfile.py` generates it from your parameters:
+
+- **Hostname** — where GeoNode will be served (`localhost` for local use)
+- **Passwords** — GeoNode admin, GeoServer admin, two PostgreSQL databases
+- **OAuth2 credentials** — `clientid` and `clientsecret` for GeoServer-to-GeoNode authentication
+
+All secrets go into `.env`. Docker Compose reads it at startup. **Never commit `.env` to version control.**
+
+Note:
+The .env.sample file in the repo shows every available option with defaults. For a training environment the simple passwords in the next slide are fine. For production, use `openssl rand -hex 32` to generate each password.
+
+---
+
+## Step 2 — Generate the .env file
+
+- Create `.env` with random values for parameters
+```bash
+python create-envfile.py
+```
+
+- Create `.env` with provided parameters
+```bash
+python create-envfile.py \
+  --hostname localhost \
+  --geonodepwd admin \
+  --geoserverpwd geoserver \
+  ...
+```
+
+- Copy the `.env.sample` -> rename it `.env` -> edit the parameter values
+
+Note:
+Random values are generated for any parameter you omit, except hostname. The clientid and clientsecret are used by GeoServer to authenticate back to GeoNode's OAuth2 endpoint — they must match on both sides, so set them explicitly here.
+
+---
+
+## Step 3 — Build and start
+
+```bash
+docker compose build --no-cache
+docker compose up -d
+```
+
+- `build --no-cache` — pulls base images and builds fresh; **5–15 min** on first run
+- `up -d` — starts all containers in the background
+- Verify with `docker compose ps` — every service should show `Up`
+
+Note:
+If `docker compose` is not recognised, try `docker-compose` (with hyphen) for older installs. The first build downloads ~2 GB of base images. If a container shows "Exited", check its logs: `docker compose logs <service-name>`. The most common cause is a misconfigured .env.
+
+---
+
+## Containers that power the stack
+
+<div class="compact">
+
+| Container | What it does | Exposed |
 |---|---|---|
-| **Operational** | PostGIS | Field data, web map backend, daily edits, multi-user |
-| **Analytical** | DuckDB + GeoParquet | Census analysis, reports, ad-hoc queries, single analyst |
-| **Archival/BigData/AI/ML** | Data lake + Apache Sedona | National datasets, satellite products, distributed processing |
+| `db` | PostgreSQL / PostGIS — stores GeoNode metadata and spatial layers | internal |
+| `geoserver` | GeoServer — serves WMS, WFS, WMTS for all published layers | internal |
+| `django` | GeoNode Django app — catalog, UI, upload, user management | internal |
+| `geonode` | Nginx reverse proxy — routes `/` to Django, `/geoserver` to GeoServer | **:80** |
+| `celery` | Background task worker — handles uploads, thumbnails, indexing | internal |
+| `redis (5.X) or rabbitmq` | Message broker between Django and Celery | internal |
 
-**Three decision questions:**
+</div>
 
-1. Are multiple users writing to this data? → **PostGIS**
-2. Large static dataset for analytical queries? → **DuckDB / GeoParquet**
-3. Distributed processing at national scale? → **Data Lake + Apache Sedona**
-
-Note: This is the framework participants should leave the lecture with. Most AFCD workflows live in the first two tiers. The data lake tier is context — for when datasets outgrow a single machine or when AFCD interfaces with national PSA data infrastructure.
-
----
-
-## the migration path
-
-| ArcGIS Online | Open Replacement | How |
-|---|---|---|
-| Hosted feature layers | **PostGIS** tables | Export → `ogr2ogr` → PostGIS |
-| WMS / WFS services | **GeoServer** | Publish PostGIS table (Day 2) |
-| Portal / catalog | **GeoNode** | Register GeoServer layer (Day 3) |
-| AGOL dashboards | **Custom web app** | MapLibre + GeoServer API (Days 4–5) |
-| Cloud hosting | **Docker stack** | `docker compose up` (all week) |
-
-ArcGIS Online Feature Layer = **PostGIS table + GeoServer WFS endpoint**.
-
-Note: Return to the opening question here — "how does a field officer update reach the web map?" The answer is now visible: field data → PostGIS → GeoServer → web map. This is also the first time the full week arc becomes visible to participants.
+Note:
+Only Nginx (port 80) is exposed to the host. All other containers communicate on an internal Docker network. GeoServer is not directly reachable from the browser — all requests go through Nginx, which proxies to the right container based on the URL path.
 
 ---
 
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-# demo
+## Check if GeoNode is running
+
+| Account | URL | Username | Password |
+|---|---|---|---|
+| GeoNode | `http://localhost` | value in `.env` file | value in `.env` file  |
+| GeoServer | `http://localhost/geoserver/web` | value in `.env` file | value in `.env` file |
+
+Log in to GeoNode and confirm the catalog loads. The stack is ready for the next demo.
+
+**NOTES**:
+- GeoServer may take 1–2 minutes longer than GeoNode to be fully ready — if the GeoServer page returns a 502, wait and reload. 
+- If localhost does not load at all: check `docker compose ps` (all Up), check `docker compose logs [name-of-container]` for errors, and confirm no firewall is blocking the appropriate ports.
+
+Note:
+GeoServer may take 1–2 minutes longer than GeoNode to be fully ready — if the GeoServer page returns a 502, wait and reload. If localhost does not load at all: check `docker compose ps` (all Up), check `docker compose logs geonode` for Nginx errors, and confirm no firewall is blocking port 80.
 
 ---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-# workshop
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1 style="color: var(--bnhr-accent-orange);">questions?</h1>
 
 ---
 
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers • users</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>uploading layers</h1>
+
+---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<h1 style="color: #ffa500">Questions?</h1>
+<span class="section-label">demo | managers • users</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>styling layers</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers • users</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>maps</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers • users</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>dashboards</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers • users</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>geostories</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>admin panel</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>simple theming</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>managing users & groups</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>managing layers & permissions</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">demo | managers</span>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>geonode management commands</h1>
+
+---
+
+## Exit ticket
+
+*Before lunch — write individually:*
+
+
+1. How clear was this session for you?
+2. How confident are you to try this on your own?
+3. Which topic did you find most difficult or confusing?
+4. In one word — what's your reaction to what we just covered?
+5. What is your biggest question right now?
+6. A colleague in another division needs the `seaweed_farms` data. How do they find, evaluate, and download it without calling you?
+
+Note:
+Collect before participants leave. Questions 1–2 surface real AFCD datasets and immediate metadata priorities. Questions 3–4 check conceptual retention of SDI and architecture. Question 5 checks the upload pipeline. Question 6 tests whether participants understand the catalog as a self-service discovery tool — the core payoff of the morning session.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# <span style="color: #ffa500">Questions?</span>
 
       </textarea>
     </section>

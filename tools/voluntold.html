@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voluntold - nobody volunteered so someone gets voluntold. :D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;700;800&family=Atkinson+Hyperlegible+Next:wght@400;700&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:   #0c2340;
+      --blue:   #3791e0;
+      --orange: #ffa500;
+      --green:  #589632;
+      --cream:  #f5f5f5;
+      --pale:   #EBF6FF;
+      --gray:   #888;
+      --red:    #CC0000;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Atkinson Hyperlegible Next', Arial, sans-serif;
+      background: var(--cream);
+      color: var(--navy);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--navy);
+      padding: 32px 48px 28px;
+      display: flex;
+      align-items: flex-end;
+      gap: 24px;
+    }
+
+    header h1 {
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 800;
+      font-size: 56pt;
+      color: var(--cream);
+      letter-spacing: -0.25rem;
+      line-height: 1;
+      text-transform: lowercase;
+    }
+
+    header .tagline {
+      font-size: 13pt;
+      color: var(--blue);
+      font-style: italic;
+      padding-bottom: 6px;
+    }
+
+    /* ── Main layout ── */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    /* ── Left panel ── */
+    .panel-left {
+      padding: 40px 40px 40px 48px;
+      border-right: 2px solid #dde5ef;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-label {
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 700;
+      font-size: 13pt;
+      color: var(--navy);
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+    }
+
+    .panel-label span {
+      font-weight: 400;
+      color: var(--gray);
+      font-size: 11pt;
+    }
+
+    /* ── Input tabs ── */
+    .input-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid #dde5ef;
+    }
+
+    .tab-btn {
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 700;
+      font-size: 11pt;
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      padding: 10px 20px;
+      color: var(--gray);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      border-radius: 0;
+    }
+
+    .tab-btn:active { transform: none; }
+
+    .tab-btn.active {
+      color: var(--navy);
+      border-bottom-color: var(--orange);
+    }
+
+    .tab-btn:hover:not(.active) { color: var(--navy); }
+
+    /* ── Tab panels ── */
+    .tab-panel { display: none; flex-direction: column; gap: 12px; flex: 1; }
+    .tab-panel.active { display: flex; }
+
+    textarea {
+      flex: 1;
+      min-height: 280px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 13pt;
+      color: var(--navy);
+      background: white;
+      border: 2px solid #c8d8ea;
+      border-radius: 6px;
+      padding: 16px;
+      resize: vertical;
+      outline: none;
+      line-height: 1.8;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: var(--blue); }
+    textarea::placeholder { color: #aab; }
+
+    /* ── File drop zone ── */
+    .drop-zone {
+      flex: 1;
+      min-height: 280px;
+      border: 2px dashed #c8d8ea;
+      border-radius: 6px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--blue);
+      background: var(--pale);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon {
+      font-size: 36pt;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .drop-text {
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14pt;
+      color: var(--navy);
+      pointer-events: none;
+    }
+
+    .drop-sub {
+      font-size: 11pt;
+      color: var(--gray);
+      pointer-events: none;
+    }
+
+    /* ── Name count ── */
+    .name-count {
+      font-size: 11pt;
+      color: var(--gray);
+      text-align: right;
+    }
+
+    .name-count strong { color: var(--blue); font-weight: 700; }
+
+    /* ── Options ── */
+    .options {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11pt;
+      color: var(--navy);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .option input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14pt;
+      text-transform: lowercase;
+      letter-spacing: 0.01em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      padding: 14px 28px;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.97); }
+
+    .btn-pick {
+      background: var(--orange);
+      color: var(--navy);
+      flex: 1;
+    }
+
+    .btn-pick:hover { background: #e69400; }
+    .btn-pick:disabled {
+      background: #ddd;
+      color: #aaa;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-reset {
+      background: transparent;
+      color: var(--gray);
+      border: 2px solid #ccc;
+      padding: 12px 20px;
+      font-size: 12pt;
+    }
+
+    .btn-reset:hover { border-color: var(--navy); color: var(--navy); }
+
+    /* ── Right panel ── */
+    .panel-right {
+      padding: 40px 48px 40px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .panel-right .panel-title {
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 700;
+      font-size: 13pt;
+      color: var(--navy);
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Result box ── */
+    .result-box {
+      background: white;
+      border: 3px solid #dde5ef;
+      border-radius: 8px;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+      gap: 12px;
+      transition: border-color 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-box.picked { border-color: var(--orange); }
+
+    .result-label {
+      font-size: 11pt;
+      color: var(--gray);
+      text-transform: lowercase;
+      letter-spacing: 0.04em;
+    }
+
+    .result-name {
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 800;
+      font-size: 42pt;
+      color: var(--navy);
+      text-align: center;
+      line-height: 1.1;
+      letter-spacing: -0.15rem;
+      word-break: break-word;
+      transition: opacity 0.2s;
+    }
+
+    .result-name.rolling {
+      opacity: 0.4;
+      color: var(--blue);
+    }
+
+    .result-placeholder {
+      font-family: 'Albert Sans', sans-serif;
+      font-size: 22pt;
+      font-weight: 700;
+      color: #ccc;
+      text-align: center;
+      letter-spacing: -0.05rem;
+    }
+
+    /* ── Picked list ── */
+    .picked-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .picked-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .picked-header .panel-title { margin: 0; }
+
+    .picked-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .picked-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: var(--pale);
+      border-radius: 4px;
+      font-size: 12pt;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--navy);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .picked-item .pick-num {
+      font-size: 10pt;
+      color: var(--gray);
+      min-width: 20px;
+      text-align: right;
+    }
+
+    .picked-item .pick-name { flex: 1; font-weight: 600; }
+
+    .picked-item .pick-remove {
+      background: none;
+      border: none;
+      color: #bbb;
+      font-size: 14pt;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .picked-item .pick-remove:hover { color: var(--red); }
+    .picked-item .pick-remove:active { transform: none; }
+
+    .picked-empty {
+      font-size: 11pt;
+      color: #bbb;
+      font-style: italic;
+      padding: 4px 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--navy);
+      padding: 14px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer span { font-size: 10pt; color: var(--gray); }
+
+    footer .footer-brand {
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 700;
+      font-size: 11pt;
+      color: var(--blue);
+      letter-spacing: 0.05em;
+      text-transform: lowercase;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 680px) {
+      header {
+        padding: 20px 20px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      header h1 { font-size: 36pt; }
+
+      header .tagline {
+        font-size: 11pt;
+        padding-bottom: 0;
+      }
+
+      main { grid-template-columns: 1fr; }
+
+      .panel-left {
+        padding: 24px 20px;
+        border-right: none;
+        border-bottom: 2px solid #dde5ef;
+      }
+
+      .panel-right { padding: 24px 20px; }
+
+      textarea,
+      .drop-zone { min-height: 160px; }
+
+      .result-box {
+        min-height: 140px;
+        padding: 24px 20px;
+      }
+
+      .result-name { font-size: 28pt; }
+      .result-placeholder { font-size: 15pt; }
+
+      .picked-list { max-height: 180px; }
+
+      footer {
+        padding: 12px 20px;
+        flex-direction: column;
+        gap: 2px;
+        align-items: flex-start;
+      }
+
+      footer span:first-child { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>voluntold</h1>
+  <p class="tagline">nobody volunteered so someone gets voluntold. :D</p>
+</header>
+
+<main>
+
+  <!-- Left: input -->
+  <div class="panel-left">
+
+    <div class="panel-label">names <span>— type, paste, or load a file</span></div>
+
+    <!-- Tabs -->
+    <div class="input-tabs">
+      <button class="tab-btn active" data-tab="tab-type">type / paste</button>
+      <button class="tab-btn" data-tab="tab-file">load from file</button>
+    </div>
+
+    <!-- Tab: type/paste -->
+    <div class="tab-panel active" id="tab-type">
+      <textarea id="names-input" placeholder="Alice&#10;Bob&#10;Carol&#10;Dave&#10;Eve" spellcheck="false"></textarea>
+    </div>
+
+    <!-- Tab: file -->
+    <div class="tab-panel" id="tab-file">
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".txt,text/plain">
+        <div class="drop-icon" id="drop-icon">📄</div>
+        <div class="drop-text" id="drop-text">drop a .txt file here</div>
+        <div class="drop-sub" id="drop-sub">or click to browse — one name per line</div>
+      </div>
+    </div>
+
+    <div class="name-count" id="name-count">0 names</div>
+
+    <div class="options">
+      <label class="option">
+        <input type="checkbox" id="opt-remove" checked>
+        Remove picked names from pool
+      </label>
+      <label class="option">
+        <input type="checkbox" id="opt-shuffle">
+        Show shuffle animation
+      </label>
+    </div>
+
+    <div class="controls">
+      <button class="btn-pick" id="btn-pick" disabled>pick someone</button>
+      <button class="btn-reset" id="btn-reset" title="Clear picked list and restore all names">reset</button>
+    </div>
+
+  </div>
+
+  <!-- Right: result + history -->
+  <div class="panel-right">
+    <div class="panel-title">result</div>
+
+    <div class="result-box" id="result-box">
+      <p class="result-placeholder" id="result-placeholder">waiting...</p>
+      <p class="result-label" id="result-label" style="display:none">voluntold</p>
+      <p class="result-name" id="result-name" style="display:none"></p>
+    </div>
+
+    <div class="picked-section">
+      <div class="picked-header">
+        <div class="panel-title">already picked</div>
+      </div>
+      <div class="picked-list" id="picked-list">
+        <p class="picked-empty" id="picked-empty">no one picked yet</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>paste names or load a file → click pick → someone's day just changed</span>
+  <span class="footer-brand">bnhr.xyz</span>
+</footer>
+
+<script>
+  // ── Element refs ──
+  const namesInput   = document.getElementById('names-input');
+  const countEl      = document.getElementById('name-count');
+  const btnPick      = document.getElementById('btn-pick');
+  const btnReset     = document.getElementById('btn-reset');
+  const resultBox    = document.getElementById('result-box');
+  const resultPh     = document.getElementById('result-placeholder');
+  const resultLbl    = document.getElementById('result-label');
+  const resultEl     = document.getElementById('result-name');
+  const pickedList   = document.getElementById('picked-list');
+  const pickedEmpty  = document.getElementById('picked-empty');
+  const optRemove    = document.getElementById('opt-remove');
+  const optShuffle   = document.getElementById('opt-shuffle');
+
+  const fileInput    = document.getElementById('file-input');
+  const dropZone     = document.getElementById('drop-zone');
+  const dropIcon     = document.getElementById('drop-icon');
+  const dropText     = document.getElementById('drop-text');
+  const dropSub      = document.getElementById('drop-sub');
+
+  let pickedNames = [];
+  let removedSet  = new Set();
+
+  // ── Tab switching ──
+  function switchToTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tabId);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === tabId);
+    });
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchToTab(btn.dataset.tab);
+      updateUI();
+    });
+  });
+
+  // ── Names always come from the textarea ──
+  function getNames() {
+    return namesInput.value
+      .split('\n')
+      .map(n => n.trim())
+      .filter(n => n.length > 0);
+  }
+
+  function getPool() {
+    const all = getNames();
+    return optRemove.checked ? all.filter(n => !removedSet.has(n)) : all;
+  }
+
+  // ── Update count and button state ──
+  function updateUI() {
+    const all    = getNames();
+    const pool   = getPool();
+    const unique = new Set(all).size;
+
+    countEl.innerHTML = `<strong>${unique}</strong> name${unique !== 1 ? 's' : ''}`
+      + (optRemove.checked && removedSet.size > 0
+          ? ` &nbsp;·&nbsp; <strong>${pool.length}</strong> remaining`
+          : '');
+
+    btnPick.disabled = pool.length === 0;
+    btnPick.textContent = (pool.length === 0 && all.length > 0 && optRemove.checked)
+      ? 'everyone picked'
+      : 'pick someone';
+  }
+
+  // ── File loading — populates textarea and switches to type/paste tab ──
+  function loadFile(file) {
+    if (!file || (file.type !== 'text/plain' && !file.name.endsWith('.txt'))) {
+      showDropError('please use a .txt file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const lines = e.target.result
+        .split(/\r?\n/)
+        .map(n => n.trim())
+        .filter(n => n.length > 0);
+
+      if (lines.length === 0) {
+        showDropError('file is empty');
+        return;
+      }
+
+      namesInput.value = lines.join('\n');
+      switchToTab('tab-type');
+      namesInput.focus();
+      updateUI();
+    };
+
+    reader.onerror = () => showDropError('could not read file');
+    reader.readAsText(file);
+  }
+
+  function showDropError(msg) {
+    dropIcon.textContent = '⚠️';
+    dropText.textContent = msg;
+    dropSub.textContent = 'try a different file';
+    dropSub.style.display = '';
+    setTimeout(resetDropZone, 2500);
+  }
+
+  function resetDropZone() {
+    dropZone.classList.remove('drag-over');
+    dropIcon.textContent = '📄';
+    dropText.textContent = 'drop a .txt file here';
+    dropSub.textContent = 'or click to browse — one name per line';
+    dropSub.style.display = '';
+    fileInput.value = '';
+  }
+
+  // File input change
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) loadFile(fileInput.files[0]);
+  });
+
+  // Drag and drop
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('drag-over');
+  });
+
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) loadFile(file);
+  });
+
+  // ── Render picked history ──
+  function renderPicked() {
+    [...pickedList.querySelectorAll('.picked-item')].forEach(el => el.remove());
+    if (pickedNames.length === 0) {
+      pickedEmpty.style.display = '';
+      return;
+    }
+    pickedEmpty.style.display = 'none';
+    pickedNames.forEach((name, i) => {
+      const item = document.createElement('div');
+      item.className = 'picked-item';
+      item.innerHTML = `
+        <span class="pick-num">${i + 1}.</span>
+        <span class="pick-name">${escHtml(name)}</span>
+        <button class="pick-remove" title="Remove from history" data-index="${i}">×</button>
+      `;
+      pickedList.appendChild(item);
+    });
+    pickedList.scrollTop = pickedList.scrollHeight;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Pick ──
+  function pick() {
+    const pool = getPool();
+    if (pool.length === 0) return;
+    optShuffle.checked ? runShuffle(pool) : showResult(pool[Math.floor(Math.random() * pool.length)]);
+  }
+
+  function showResult(name) {
+    resultPh.style.display = 'none';
+    resultLbl.style.display = '';
+    resultEl.style.display  = '';
+    resultEl.classList.remove('rolling');
+    resultEl.textContent = name;
+    resultBox.classList.add('picked');
+    if (optRemove.checked) removedSet.add(name);
+    pickedNames.push(name);
+    renderPicked();
+    updateUI();
+  }
+
+  function runShuffle(pool) {
+    btnPick.disabled = true;
+    resultPh.style.display = 'none';
+    resultLbl.style.display = '';
+    resultEl.style.display  = '';
+    resultEl.classList.add('rolling');
+    resultBox.classList.remove('picked');
+
+    const chosen   = pool[Math.floor(Math.random() * pool.length)];
+    const duration = 1400;
+    const interval = 80;
+    let elapsed    = 0;
+
+    const timer = setInterval(() => {
+      elapsed += interval;
+      resultEl.textContent = pool[Math.floor(Math.random() * pool.length)];
+      if (elapsed >= duration) {
+        clearInterval(timer);
+        resultEl.textContent = chosen;
+        resultEl.classList.remove('rolling');
+        resultBox.classList.add('picked');
+        if (optRemove.checked) removedSet.add(chosen);
+        pickedNames.push(chosen);
+        renderPicked();
+        updateUI();
+      }
+    }, interval);
+  }
+
+  // ── Reset ──
+  function reset() {
+    pickedNames = [];
+    removedSet.clear();
+    resultPh.style.display = '';
+    resultPh.textContent = 'waiting...';
+    resultLbl.style.display = 'none';
+    resultEl.style.display  = 'none';
+    resultEl.textContent = '';
+    resultBox.classList.remove('picked');
+    renderPicked();
+    updateUI();
+  }
+
+  // ── Remove from history ──
+  pickedList.addEventListener('click', e => {
+    const btn = e.target.closest('.pick-remove');
+    if (!btn) return;
+    const i    = parseInt(btn.dataset.index, 10);
+    const name = pickedNames[i];
+    pickedNames.splice(i, 1);
+    if (!pickedNames.includes(name)) removedSet.delete(name);
+    renderPicked();
+    updateUI();
+  });
+
+  // ── Events ──
+  namesInput.addEventListener('input', updateUI);
+  optRemove.addEventListener('change', updateUI);
+  btnPick.addEventListener('click', pick);
+  btnReset.addEventListener('click', reset);
+
+  document.addEventListener('keydown', e => {
+    if (e.target === namesInput) return;
+    if ((e.key === 'Enter' || e.key === ' ') && !btnPick.disabled) {
+      e.preventDefault();
+      pick();
+    }
+  });
+
+  updateUI();
+</script>
+</body>
+</html>
