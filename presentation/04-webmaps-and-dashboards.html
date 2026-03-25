@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Introduction | Learn Geospatial Data Management & Engineering w/ BNHR</title>
+  <title>Webmaps and Dashboards | Learn Geospatial Data Management &amp; Engineering w/ BNHR</title>
   <link rel="icon" href="https://raw.githubusercontent.com/benhur07b/learn-python/refs/heads/main/favicon.ico">
 
   <!-- Reveal.js (CDN) -->
@@ -13,12 +13,13 @@
   <!-- Syntax highlighting -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
 
-  <!-- CopyCode plugin -->
+    <!-- CopyCode plugin -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-copycode/plugin/copycode/copycode.css">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Roboto+Mono:wght@400;500;600;700&family=Atkinson+Hyperlegible+Next:ital,wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
 /* ===============================================================
    bnhr Reveal.js Theme — BNHR
@@ -712,326 +713,566 @@
       <textarea data-template>
 <!-- .slide: class="title-slide" data-background-color="#091A31" -->
 <img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
-<p class="project-context">philippine statistics authority · geospatial data management & engineering</p>
+<!-- <p class="project-context">PSA AFCD OPEN GEOSPATIAL STACK TRAINING</p> -->
 
-<h1><span style="color: var(--bnhr-accent-orange); !important">introduction</span><br>to the training</h1>
+<h1>webmaps and <br><span style="color: var(--bnhr-accent-green);">dashboards</span></h1>
 
-<!-- <p class="subtitle">Day 1 Morning · 9:00–12:00</p> -->
+<!-- <p class="subtitle">Day 4 Morning — Building Web Applications on the Open Stack</p> -->
 <p class="url">bnhr.xyz</p>
+
 ---
 
 <!-- .slide: class="toc-slide" -->
 ## Contents
 
-1. What We Are Building
-2. The Open Geospatial Stack
-3. How This Training Works
-4. Three Personas, One Room
-5. The Week Ahead
-6. What Is Expected of You
+1. The Application Problem 
+2. The Application Layer
+3. Track A — Geospatial Applications
+4. Track B — Data Dashboards
+5. Demo
+
+---
+
+## Retrieval practice
+
+*Without looking at your notes:*
+
+What would you use to get a JSON list of all layers in GeoNode? What does the URL look like?
+
+What does the response include?
+
+Note:
+No slides. Prompt on the board. 2 min individual write, cold-call 3–4 participants. Expected: http://localhost/api/v2/resources/?resource_type=layer — returns title, abstract, WMS link, WFS link, download URL. Correct in 2–3 minutes. This activates the GeoNode catalog API knowledge from Day 3 — it is the data source both demo tracks will consume this morning.
 
 ---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR"> 
-
-<h1>what <span style="color: var(--bnhr-accent-green)">we</span><br>are building</h1> 
-
----
-
-## By Day 5, you will have a better understanding on how to...
-
-- Store, share, and manage your geospatial data;
-- Build applications on top of your data such as dashboards and webmaps;
-- **ALL USING TOOLS THAT YOU WILL OWN**
-
-
-*We will also look at how we can replace your current ArcGIS Online webmap and migrate from your current proprietary setup to a more open geospatial stack.* 
-
-**Every exercise this week is a step toward it.**
-
-Note:
-The dashboard isn't a separate capstone task added to the end of the week. Every afternoon lab produces one piece of it. By Day 5, those pieces combine into a working system. Participants who understand the destination are more motivated to complete each intermediate step.
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>the application<br><span style="color: var(--bnhr-accent-orange);">problem</span></h1>
 
 ---
 
-## Each day adds one layer — and each layer builds on the one before
+## The data is there — but who can actually use it?
 
-<bnhr-pipeline caption="PostGIS: store + query | GeoServer: publish WMS/WFS | GeoNode: catalog + metadata | Applications: web maps + dashboards | Cloud Native: future-looking">
-PostGIS, GeoServer, GeoNode, Applications, Cloud Native
-</bnhr-pipeline>
 
-Note:
-PostGIS stores it. GeoServer shares it. GeoNode catalogs it. Applications make it usable. Cloud native distributes it. Each day's output is the input to the next day. Participants who fall behind on Day 2 will feel it on Day 3 — the cumulative structure is the main reason to keep up.
+- PostGIS stores it, GeoServer shares it, GeoNode catalogs it but a fisheries officer, regional manager, data analyst, or the general public may need some guidance and training before they can use these tools. 
+
+- What if we need something that anyone open in a browser and undrestand intuitively?
+
+- The application layer bridges the open stack to the people who actually need the data.
 
 ---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR"> 
-
-<h1>the <span style="color: var(--bnhr-accent-blue)">open<br>geospatial</span> stack</h1>
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>the application<br>layer</h1>
 
 ---
 
-## Every ArcGIS Online component has an open equivalent — and you will build it
+## The open stack now has four layers — the application sits on top
 
-<div class="compact">
-
-| ArcGIS Online | Open replacement | Day |
+| Layer | Tool | Day |
 |---|---|---|
-| Hosted feature layers | PostGIS + GeoServer WFS | 1–2 |
-| WMS tile services | GeoServer WMS | 2 |
-| Portal / data catalog | GeoNode | 3 |
-| AGOL web map | MapLibre or Leaflet web map | 4 |
-| AGOL dashboards | Streamlit or Observable | 4 |
-| Cloud hosting (ESRI-managed) | Self-hosted Docker stack | All |
-| Partner data distribution | COG, PMTiles, GeoParquet | 5 |
+| **User-facing application** | **← This is what Day 4 builds** | **Day 4** |
+| Catalog | GeoNode | Day 3 |
+| Services | GeoServer (WMS / WFS) | Day 2 |
+| Storage | PostGIS | Day 1 |
 
-</div>
+The layers below are already running. The application layer is what stakeholders, decision-makers, and external users actually touch.
 
 Note:
-This migration mapping runs through every day. When a new tool is introduced, it always starts from the AGOL component it replaces. The conceptual mapping is 1:1 — only the URLs and the license fees are different.
+The bottom three layers are done. PostGIS stores it, GeoServer shares it, GeoNode catalogs it. Today's question: how do you build something a decision-maker can actually use? The WMS endpoints are live. The GeoNode API returns JSON. Now — what goes on top?
 
 ---
 
-## bring your own data (byod)
-
-- We'll provide sample data during the demos and exercises but we encourage you to **bring your own data**. 
-
-- That way, the data you query, publish, and map this week is the same data your division works with every day.
-
-Note:
-No placeholder data. The exercises feel applicable to daily work because they are. Participants with a specific dataset they want to migrate should name it during the pre-training needs assessment — the facilitator will reference it in demos.
-
----
-
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR"> 
-
-<h1>how this<br>training <span style="color: var(--bnhr-accent-purple)">works</span></h1>
-
----
-
-## 30% concepts, 70% hands-on — because you learn tools by using them
-
-- Every concept is **followed immediately by hands-on exercises**
-- **The problem comes first** — the tool is the means to solve it
-- **Debugging errors is learning time** — built into the schedule, not a sign of failure
-
-Note:
-This ratio is deliberate. You do not learn geospatial software by watching it. The mental model consolidates when you apply it yourself, hit a real error, and work through it. Problem-first sequencing means participants always know why they are learning the tool before being shown how.
-
----
-
-## Every module follows the same arc — from watching to doing independently
-
-<bnhr-pipeline highlight="We Do" caption="I Do: watch and ask questions | We Do: follow along step by step | You Do: independent and parallel exercises">
-I Do, We Do, You Do
-</bnhr-pipeline>
-
-**Do not skip the We Do phase.** It is the bridge that makes the independent lab accessible.
-
-Note:
-The We Do phase is where most in-session learning happens. Fast learners help their neighbours — explaining consolidates their own understanding. Slower learners catch up before the independent lab begins. Jumping from demo straight to independent lab is the most common cause of labs falling apart.
-
----
-
-## Every morning is a shared plenary — all three groups, together
-
-<div class="compact">
-
-| Time | Block | What happens |
-|---|---|---|
-| 9:00–9:15 | Retrieval practice | Written recall from previous day — no notes |
-| 9:15–10:15 | Lecture | Concepts and foundation-building |
-| 10:15–10:30 | Traffic light + break | Check-in & self-assessment |
-| 10:30–11:10 | Demo (I Do) | Facilitator demonstrates |
-| 11:10–11:50 | Workshop (We Do) | Guided practice — follow along step by step |
-| 11:50–12:00 | Debrief + exit ticket | Check-in & self-assessment |
-
-</div>
-
-Note:
-Mornings are shared across all three personas. The traffic light check-in at 10:15 is the facilitator's adjustment mechanism — if the room is mostly red on a concept, the demo pacing changes. The exit ticket is read before the afternoon session begins and shapes how the facilitator opens the debrief.
-
----
-
-## Afternoons split by persona — same theme, different tasks, one debrief
-
-| Group | Afternoon focus |
-|---|---|
-| **Builders/Infrastructure** | Deploy, configure, script, and build applications |
-| **Custodians/Administrators** | Govern and manage data, permissions, and metadata |
-| **Users/Developers** | Query, consume services, and build maps or dashboards |
-
-All groups reconvene at **16:40** to share what they built and what questions came up.
-
-*The split is not a separation—**it's a deepening and an opportunity for cross-personal learning***—Builders hear what Users need from the server; Managers hear what Builders are creating;
-
-Note:
-The split is not a separation — it's a deepening. Same morning concepts, applied through each role's lens. The 16:40 reconvergence is often where the most interesting cross-persona learning happens — Builders hear what Users need from the server; Managers hear what metadata Builders are skipping.
-
----
-
-## Day 2+ starts with retrieval practice — no notes, ten minutes, cold call
-
-*One prompt on the board. Write what you can remember. No notes, no slides.*
-
-The act of trying to remember—even partially—strengthens memory more than re-reading your notes.
-
-Note:
-Example prompts: "Write the SQL for a spatial join on two PostGIS tables" or "Name the three OGC service types GeoServer publishes." The facilitator corrects and clarifies in 3–4 minutes. Even partial recall during the exercise strengthens memory more than passive review — this is why the exercise runs even when participants feel uncertain.
-
----
-
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR"> 
-
-<h1><span style="color: var(--bnhr-accent-orange)">three personas</span>,<br>one room</h1>
-
----
-
-## Builders — deploy, configure, and build the structural foundations of the stack
-
-- Deploy PostGIS, GeoServer, and GeoNode
-- Support Custodians and Users
-- Publish cloud native formats: PMTiles, GeoParquet, STAC
-
-*technical backbone of the team. comfortable with the servers and the command line.*
-
-Note:
-Builders are the technical backbone. Everything Managers and Users rely on in the afternoon labs depends on Builders having deployed and configured the stack correctly. On Day 1, Builders should be the first to confirm the Docker stack is running.
-
----
-
-## Custodians and Administrators — govern the stack and the data it holds
-
-- Design and document data schema and naming conventions
-- Configure user roles, permissions, and access policies
-- Manage metadata workflows for ISO-standard catalog records
-- Draft a cloud native data distribution policy for partner agencies
-
-*moderate technical background. comfortable with admin UIs.*
-
-Note:
-Managers are the governance layer. What they configure determines who can publish data, who can access it, and how it's described in the catalog. Their work is invisible when done well and catastrophic when skipped.
-
----
-
-## Users and developers — connect to the stack and create from it
-
-- Connect QGIS to PostGIS and query data directly
-- Consume WMS and WFS services from GeoServer in existing workflows
-- Use GeoNode to find, preview, and download datasets
-- Build a web map or analytical dashboard on the open stack
-
-*geospatial-literate. operations, projects, and applications.*
-
-Note:
-Users are the audience that makes the stack worthwhile. Their workflows define what the stack needs to support. On Day 1, Users' questions about QGIS connectivity are often the clearest signal of whether the Builders' PostGIS setup is working.
-
----
-
-## Each persona owns a different part of the stack in the afternoon
-
-<bnhr-heatmap columns="Deploy, Configure, Govern, Analyze, Build, Distribute">
-Builders: ●, ●, , , ●, ●
-Managers: , ●, ●,●,, ●
-Users: , , , ●, ●, ●
-</bnhr-heatmap>
-
-*This shows **focus areas** (i.e. primary responsibilities not exclusive ownership).*
-
-Note:
-The heatmap shows afternoon focus areas — primary responsibility, not exclusive ownership. All personas attend the same morning sessions. Day 5 Distribute column involves all three: Builders generate the formats, Managers set the policy, Users consume the assets.
-
----
-
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR"> 
-
-# The Week<br>Ahead
-
----
-
-## Five days, five layers — each building on the last
-
-<div class="compact">
-
-| Day | Morning topic | Afternoon |
-|---|---|---|
-| **Day 1** | Storing Spatial Data — PostGIS & Others | Deploy stack · Schema design · QGIS queries |
-| **Day 2** | Sharing Data — GeoServer and OGC | Configure GeoServer · Permissions · Consume WMS/WFS |
-| **Day 3** | Geospatial Catalog — GeoNode | Deploy GeoNode · User & data management · Use & consumption |
-| **Day 4** | Application Layer — Web Maps & Dashboards | **Track A:** web map · **Track B:** dashboard |
-| **Day 5** | Cloud Native Geospatial | Cloud native publish · Distribution policy · STAC |
-
-</div>
-
-Note:
-Day 4 afternoon is the exception to the persona split — participants choose Track A or B based on what they want to build, not their role. Both tracks are previewed in the Day 4 morning session so the choice is informed.
-
----
-
-## Day 4 afternoon is a self-selected track — not a persona split
+## The AGOL web map has an open equivalent for every component
 
 <div class="two-column">
 <div class="column">
-<div class="column-header">Track A — Geospatial Apps</div>
+<div class="column-header">ArcGIS Online web map</div>
 
-Build an interactive web map.
+Loads hosted feature layers from AGOL service infrastructure
 
-Tools: MapLibre GL JS · Leaflet · React
+Renders with Esri basemaps and symbology
+
+Pan, zoom, click features, view attributes
 
 </div>
 <div class="column">
-<div class="column-header">Track B — Data Dashboards</div>
+<div class="column-header">Open stack equivalent</div>
 
-Build an analytical dashboard (not necessarily spatial).
+WMS / WFS endpoints from GeoServer replace hosted feature layers
 
-Tools: Streamlit · Observable Framework · Evidence
+MapLibre GL JS or Leaflet handle rendering; OSM replaces Esri basemaps
+
+Click / identify behavior implemented in JavaScript or Python
 
 </div>
 </div>
 
 Note:
-Track selection happens at the end of the Day 4 morning session — after both demo tracks are previewed. Participants who want maps AND charts will typically self-select Track A — the mapping is the harder skill to add later. Both tracks produce a capstone output that works with the PSA open stack.
+The migration is: replace AGOL service URLs with GeoServer WMS/WFS URLs, replace the AGOL JavaScript SDK with MapLibre or Leaflet, and host the result on your own server. The architecture is identical — the URLs are different.
 
 ---
 
-<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR"> 
+## Three tiers of complexity — match the tool to the use case
 
-<h1>expectations</h1>
-
----
-
-## Three things to verify
-
-- **Builders:** Are you familiar with docker?
-- **Users:** Do you have QGIS and Python installed?
-- **Everyone:** Know your persona. [**Complete the self-assessment quiz**](../quiz/self-assessment.html).
-
-If your setup isn't working, don't hesitate to let us know!
-
----
-
-## Four norms for the week
-
-1. **Be present in the mornings** — morning concepts power the afternoon labs
-2. **Attempt before asking** — read the error, try one fix, then ask for help
-3. **Use your neighbour** — think-pair-share moments are deliberate, not optional
-4. **Answer the check-ins honestly** — they help shape what comes next
+| Tier | Effort | Skill required | Best for |
+|---|---|---|---|
+| **No-code** | Minutes | None | Sharing a GeoNode map, embedding a WMS in an existing portal |
+| **Low-code** | Hours | Python or SQL | Analyst dashboards, internal reporting, quick prototypes |
+| **Full-code** | Days–weeks | JavaScript / React | Public-facing web maps, interactive cartographic products, production apps |
 
 Note:
-Frame these as professional norms, not rules. Exit tickets only work if participants engage honestly — reassure them that "I'm confused" is a valid and valuable answer.
+The GeoNode built-in map from Day 3 is the no-code option — it already exists and requires no development. The low-code and full-code tiers are what Day 4 builds. Not every use case needs a full-code application.
 
 ---
 
 <!-- .slide: class="section-slide" data-background-color="#0c2340" -->
-<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR"> 
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<span class="section-label">track a</span>
+<h1>geospatial<br>applications</h1>
 
-<h1>let's <span style="color: var(--bnhr-accent-green);">build</span><br>something.</h1>
+---
+
+## Track A has three tools at three levels of complexity
+
+<div class="compact">
+
+| Tool | Level | Best for |
+|---|---|---|
+| **GeoNode built-in functions** | No-code | Simple, shareable maps that anyone with a browser can view |
+| **Leaflet** or **MapLibre GL JS** | Low-code / beginner to intermediate JS | Basic to intermediate web maps with custom interactions |
+| **Complete web application** | Programmer/Developer | Multi-page apps, dashboards mixing maps with charts and tables, complex user interactions |
+
+</div>
+
+- All three tracks can consume from the same data endpoints (files, databases, GeoServer, GeoNode, etc.). The difference is the rendering layer and the application wrapper.
+
+---
+
+## Leaflet loads a WMS layer in 6 lines of JavaScript
+
+```javascript
+const map = L.map('map').setView([12.5, 122.5], 6);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+L.tileLayer.wms('http://localhost:8080/geoserver/psa/wms', {
+  layers: 'psa:palay_distribution',
+  format: 'image/png',
+  transparent: true
+}).addTo(map);
+```
+
+The WMS URL is the same GeoServer endpoint from Day 2. Leaflet calls it as a tile source.
+
+Note:
+Demo Part 1 builds this live from scratch. The key message: the only thing that changed from an AGOL map is the URL. The map behavior — pan, zoom, overlay — is identical.
+
+---
+
+## MapLibre GL JS supports vector files natively
+
+- Open-source fork of Mapbox GL JS
+- Renders vector tiles (PMTiles / MVT) natively
+- Supports WMS as a raster source via the tile URL pattern from Day 2
+- Smooth pan and zoom without tile seams
+
+```
+?service=WMS&version=1.1.1&request=GetMap
+&layers=psa:palay_distribution
+&format=image/png&transparent=true
+&width=256&height=256&srs=EPSG:3857
+&bbox={bbox-epsg-3857}
+```
+
+The `{bbox-epsg-3857}` placeholder is filled by MapLibre per tile request.
+
+Note:
+Demo Part 2a builds this. The WMS GetMap anatomy is identical to Day 2 — the only new piece is the {bbox-epsg-3857} substitution pattern that MapLibre uses to turn a WMS endpoint into a tile source.
+
+---
+
+## A complete frontend application with React
+
+- Component-based frontend framework
+- MapLibre, react-leaflet, or deck.gl as the map component
+- Multi-page routing, authentication, production deployment
+
+Note:
+Demo Part 3a shows a pre-built React + MapLibre component. Not built live — shown from facilitator's machine. Participants who choose Track A will build toward this in the afternoon.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<span class="section-label">The Application Layer</span>
+<h1>track b —<br>data dashboards</h1>
+
+---
+
+## Track B has three tools across Python and JavaScript
+
+<div class="compact">
+
+| Tool | Language | Best for |
+|---|---|---|
+| **Streamlit** | Python | Analysts who write Python; rapid internal dashboards; data exploration |
+| **Observable Framework** | JavaScript | Publication-quality interactive reports; reactive notebook feel |
+| **Evidence.dev** | SQL + Markdown | BI-style dashboards without a BI tool license; PostGIS via DuckDB |
+
+</div>
+
+Track B is not "no maps" — Streamlit supports Folium, Observable supports Leaflet and D3. It means the dashboard is not *primarily* a map.
+
+Note:
+Self-selection should be based on what participants want the product to feel like, not whether it has a map. If a Track B participant wants a map panel in their Streamlit app, that is fully achievable in the afternoon.
+
+---
+
+## Streamlit turns a Python script into an interactive dashboard
+
+```python
+import streamlit as st
+import requests, pandas as pd
+
+st.title("PSA AFCD Agricultural Data Dashboard")
+
+@st.cache_data
+def get_layers():
+    r = requests.get(
+        "http://localhost/api/v2/resources/?resource_type=layer&page_size=20"
+    )
+    return r.json()["resources"]
+
+layers = get_layers()
+df = pd.DataFrame(layers)[["title", "abstract", "date", "typename"]]
+
+st.subheader("Available Layers")
+st.dataframe(df)
+```
+
+Run with `streamlit run app.py`. The GeoNode catalog drives the dashboard automatically.
+
+Note:
+Demo Part 2b builds this live. The key message: every time a new layer is uploaded to GeoNode, this dashboard reflects it — no manual maintenance. The data source is the same GeoNode API endpoint from Day 3.
+
+---
+
+## Observable Framework is a reactive notebook for data visualization
+
+```javascript
+const layers = await fetch(
+  "/api/v2/resources/?resource_type=layer"
+).then(r => r.json());
+
+display(Plot.plot({
+  marks: [
+    Plot.barY(layers.resources, {x: "title", y: d => d.popular_count})
+  ]
+}));
+```
+
+- Markdown + JavaScript; each page is a reactive notebook
+- Live-reload development server (`npm run dev`)
+- Excellent for exploratory analysis with Observable Plot charts
+
+Note:
+Demo Part 3b shows a pre-built Observable Framework page. Best for participants comfortable with JavaScript who want publication-quality interactive reports.
+
+---
+
+## Evidence.dev builds BI dashboards from SQL queries and Markdown
+
+```sql
+-- palay_by_province.sql
+SELECT province, SUM(total_yield) AS total_yield
+FROM palay_distribution
+GROUP BY province
+ORDER BY total_yield DESC
+```
+
+```markdown
+## Production by Province
+
+<BarChart data={palay_by_province} x="province" y="total_yield" />
+```
+
+Write SQL, write Markdown — the framework builds a static site. Data from PostGIS via DuckDB.
+
+Note:
+Demo Part 3b also shows Evidence.dev. For the Day 4 demo, use a DuckDB-based data source — export PostGIS tables to GeoParquet, which DuckDB reads natively. Full PostGIS connector setup is a stretch task for Track B participants who finish early.
+
+---
+
+## Five questions point toward the right track
+
+<div class="compact">
+
+| Question | Points toward Track A | Points toward Track B |
+|---|---|---|
+| Is geography the primary interface? | Yes | No — charts, tables, KPIs |
+| Will external / public users use it? | Likely | Maybe not |
+| What skills does the team have? | JavaScript comfort | Python or SQL comfort |
+| Does it need to update automatically? | Via live WMS | Via API polling or rebuild |
+| How complex is the UI? | Map-centric | Multi-panel dashboard |
+
+</div>
+
+There is no wrong choice. Many production applications combine both.
+
+Note:
+If a participant is unsure, ask: "Do you want the map to be the whole product, or one panel among several?" This distinction usually resolves the choice. Participants who want both tracks will self-select Track A in practice — the mapping is the harder skill to add later.
+
+---
+
+## Traffic light check-in
+
+*Before we move to the demos:*
+
+1. I understand the three tiers (no-code / low-code / full-code) and which tier fits my use case.
+2. I can explain the difference between a WMS-based web map and a dashboard built on the GeoNode API.
+3. I know which afternoon track I am leaning toward.
+
+**Green** = confident &nbsp;|&nbsp; **Yellow** = mostly &nbsp;|&nbsp; **Red** = still unclear
+
+Note:
+Hands or sticky notes. If more than 1/3 of the room is yellow or red on statement 1, revisit the tier table before the demo. If more than 1/3 is unsure about statement 3, that's okay — the demos are specifically designed to inform the choice. Both tracks get live previews in Demo Parts 2 and 3.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1>demo</h1>
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<span class="section-label">Demo</span>
+<h1>part 1 —<br>geonode map +<br>minimal web map</h1>
+
+---
+
+## Part 1a — the no-code option already exists
+
+Open the GeoNode map from Day 3: `PSA AFCD Agricultural Overview 2024`
+
+- Show the **share URL** — anyone with a browser can view this map
+- Show the **embed code** GeoNode generates automatically
+- No code required
+
+*If all you need is a shareable map that anyone with a browser can view, this already exists. The question for today is: what do you need that GeoNode's map can't give you?*
+
+Note:
+I Do phase. 5 minutes. This sets up the motivation: the no-code option is real and useful. Participants who only need to share a static map may not need Track A or Track B at all. But most AFCD use cases — custom queries, integrated charts, role-based access — need more.
+
+---
+
+## Part 1b — a working WMS web map in 20 lines of HTML
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="referrer" content="strict-origin-when-cross-origin">  
+  <title>PSA AFCD Agricultural Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>html, body, #map { height: 100%; margin: 0; }</style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([12.5, 122.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { attribution: '© OpenStreetMap' }).addTo(map);
+    L.tileLayer.wms('http://localhost:8080/geoserver/psa/wms',
+      { layers: 'psa:palay_distribution', format: 'image/png',
+        transparent: true, attribution: 'PSA AFCD' }).addTo(map);
+  </script>
+</body>
+</html>
+```
+
+Note:
+I Do phase. 30 minutes. Build live from a blank index.html. Open in browser. Show the live WMS layer on OSM tiles. Narrate: "This is the ArcGIS Online web map, migrated. The only difference is the WMS URL — it now points to our GeoServer." Add seaweed_farms as a second layer to show it's just another .addTo(map) call.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<span class="section-label">Demo</span>
+<h1>part 2 —<br>maplibre +<br>streamlit</h1>
+
+---
+
+## Part 2a — MapLibre GL JS as a Track A preview
+
+```javascript
+const map = new maplibregl.Map({
+  container: 'map',
+  style: 'https://demotiles.maplibre.org/style.json',
+  center: [122.5, 12.5], zoom: 5
+});
+
+map.on('load', () => {
+  map.addSource('palay', {
+    type: 'raster',
+    tiles: [
+      'http://localhost:8080/geoserver/psa/wms?service=WMS&version=1.1.1' +
+      '&request=GetMap&layers=psa:palay_distribution&format=image/png' +
+      '&transparent=true&width=256&height=256&srs=EPSG:3857&bbox={bbox-epsg-3857}'
+    ], tileSize: 256
+  });
+  map.addLayer({ id: 'palay-layer', type: 'raster', source: 'palay' });
+});
+```
+
+Note:
+We Do phase. 20 minutes. Participants follow along. Show the smooth pan/zoom. Narrate the WMS tile URL pattern — it's the same GetMap anatomy from Day 2, now used as a raster tile source. Then ask the think-pair-share question.
+
+---
+
+## Think-pair-share
+
+*What would you change in this MapLibre WMS URL to add the `seaweed_farms` layer?*
+
+2 minutes to discuss with a neighbour — then share.
+
+Note:
+Expected answer: change `layers=psa:palay_distribution` to `layers=psa:seaweed_farms`. The rest of the URL stays the same. Cold-call 2–3 pairs. This confirms understanding of the GetMap URL anatomy from Day 2 before moving to the Streamlit demo.
+
+---
+
+## Part 2b — Streamlit as a Track B preview
+
+```python
+import streamlit as st, requests, pandas as pd
+
+st.title("PSA AFCD Agricultural Data Dashboard")
+
+@st.cache_data
+def get_layers():
+    r = requests.get(
+        "http://localhost/api/v2/resources/?resource_type=layer&page_size=20"
+    )
+    return r.json()["resources"]
+
+layers = get_layers()
+df = pd.DataFrame(layers)[["title", "abstract", "date", "typename"]]
+
+st.subheader("Available Layers")
+st.dataframe(df)
+
+selected = st.selectbox("Select a layer to inspect", df["title"])
+```
+
+Run: `streamlit run app.py`
+
+Note:
+We Do phase. 15 minutes. Run with streamlit run app.py. Show the live dashboard in the browser. Narrate: "This reads from the GeoNode catalog API — the same endpoint from Day 3. Every time a new layer is uploaded to GeoNode, this dashboard reflects it automatically." The st.map() placeholder is expanded in the afternoon.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<span class="section-label">Demo</span>
+<h1>part 3 —<br>track previews</h1>
+
+---
+
+## Part 3a — React + MapLibre (Track A capstone preview)
+
+```jsx
+import Map, { Source, Layer } from 'react-map-gl/maplibre';
+
+const wmsUrl = 'http://localhost:8080/geoserver/psa/wms';
+
+export default function PSAMap() {
+  return (
+    <Map initialViewState={{ longitude: 122.5, latitude: 12.5, zoom: 5 }}
+         style={{ width: '100%', height: '500px' }}
+         mapStyle="https://demotiles.maplibre.org/style.json">
+      <Source id="palay" type="raster" tiles={[
+        `${wmsUrl}?service=WMS&version=1.1.1&request=GetMap` +
+        `&layers=psa:palay_distribution&format=image/png` +
+        `&transparent=true&width=256&height=256&srs=EPSG:3857&bbox={bbox-epsg-3857}`
+      ]} tileSize={256}>
+        <Layer id="palay-layer" type="raster" source="palay" />
+      </Source>
+    </Map>
+  );
+}
+```
+
+Note:
+I Do phase. 15 minutes. Shown from pre-built facilitator files — not built live. Narrate: "This is the same WMS source, now inside a React component. Combine this map panel with a chart panel from Recharts — that's the full AGOL dashboard replacement." Then show the completed example: React page with MapLibre map on left and bar chart of total_yield by province on right.
+
+---
+
+## Part 3b — Observable Framework and Evidence.dev (Track B capstone preview)
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">Observable Framework</div>
+
+Reactive notebook in Markdown + JavaScript
+
+Fetches GeoNode API directly as a data source
+
+Live-reload dev server — notebook feel with production output
+
+</div>
+<div class="column">
+<div class="column-header">Evidence.dev</div>
+
+SQL queries + Markdown pages
+
+Chart components with no JavaScript required
+
+PostGIS via DuckDB — static site output
+
+</div>
+</div>
+
+Note:
+I Do phase. 20 minutes. Show both pre-built examples from facilitator's machine. Observable: show the dev server, live-reload, and a completed page with a choropleth and summary statistics. Evidence.dev: show a pre-built report with multiple pages, KPI row, and province production table. Both are capstone deliverables for Track B.
+
+---
+
+## Track selection + exit ticket
+
+**Choose your afternoon track:**
+
+- **Track A** — I want to build a web map or spatial application *(MapLibre / Leaflet / React)*
+- **Track B** — I want to build an analytical dashboard *(Streamlit / Observable / Evidence.dev)*
+
+*Not sure?* Ask yourself: do you want the map to be the whole product, or one panel among several?
+
+---
+
+## Exit ticket
+
+*Write individually — collect before lunch:*
+
+> Name the application you want to have working at the end of today.
+> What data does it show? Who will use it?
+
+This is your afternoon lab objective.
+
+Note:
+3 minutes, individual and written. Collect before participants leave for lunch. These exit tickets become the afternoon lab objectives — each participant is building toward the application they described here. Reviewing them during lunch identifies where facilitator support will be needed most.
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<h1 style="color: var(--bnhr-accent-orange)">questions?</h1>
 
       </textarea>
     </section>
