@@ -147,6 +147,36 @@
       line-height: 1;
     }
 
+    .card-code-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 20px;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: #b85c00;
+      background: #fff8f0;
+      border-left: 1.5px solid #f0cfa0;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .card-code-link:hover {
+      background: #b85c00;
+      color: #fff;
+    }
+
+    .card-code-link .code-icon {
+      font-size: 16pt;
+      line-height: 1;
+    }
+
     .card-accent {
       width: 6px;
       flex-shrink: 0;
@@ -181,6 +211,14 @@
 
     .card.workbook .card-meta {
       color: #2e7d52;
+    }
+
+    .card.example .card-accent {
+      background: #b85c00;
+    }
+
+    .card.example .card-meta {
+      color: #b85c00;
     }
 
     .card-badge {
@@ -261,7 +299,11 @@
     .topic-badge.geoparquet{ background: #fce4ec; color: #880e4f; border-color: #f48fb1; }
     .topic-badge.pmtiles   { background: #f3e5f5; color: #4a148c; border-color: #ce93d8; }
     .topic-badge.spatial   { background: #e0f7fa; color: #004d54; border-color: #80deea; }
-    .topic-badge.docker    { background: #e3f0fc; color: #0b4a8c; border-color: #7ab8f5; }
+    .topic-badge.docker     { background: #e3f0fc; color: #0b4a8c; border-color: #7ab8f5; }
+    .topic-badge.web-map    { background: #e0f4f8; color: #0a5c6e; border-color: #7ed4e8; }
+    .topic-badge.streamlit  { background: #fdecea; color: #b71c1c; border-color: #f5b8b5; }
+    .topic-badge.observable { background: #fffde0; color: #5a4000; border-color: #ffe07a; }
+    .topic-badge.evidence   { background: #eef2fb; color: #1a3a8f; border-color: #b5c4e8; }
 
     /* ── Link list ── */
     .link-list {
@@ -479,7 +521,7 @@
           </div>
           <div class="card-arrow">&#8594;</div>
         </a>
-        <a class="card-data-link" href="https://docs.google.com/document/d/1JrUI3RTUx2bRD6cZy6F6ybq4IkrZwqQbaRX3V3Ex8lE/edit?usp=sharing" target="_blank" rel="noopener">
+        <a class="card-data-link" href="https://drive.google.com/drive/folders/1YZSi8T2nwpf0Cy3UN6PjoJfF65DGfpCR?usp=drive_link" target="_blank" rel="noopener">
           <span class="data-icon">&#128193;</span>Data
         </a>
       </div>
@@ -497,7 +539,21 @@
           <span class="data-icon">&#128193;</span>Data
         </a>
       </div>
-      
+
+      <div class="card workbook">
+        <a class="card-main-link" href="https://docs.google.com/document/d/1COJNrwl8LRyfrQ7Ke4J3OqPo3Uj-EphWyznDamlQfj0/edit?usp=sharing" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">Workbook 04.1</div>
+            <div class="card-title">Exercises - Webmaps & Dashboards <span class="card-badge doc">DOC</span></div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-data-link" href="https://docs.google.com/document/d/1COJNrwl8LRyfrQ7Ke4J3OqPo3Uj-EphWyznDamlQfj0/edit?usp=sharing" target="_blank" rel="noopener">
+          <span class="data-icon">&#128193;</span>Data
+        </a>
+      </div>
+     
       <div class="card workbook">
         <a class="card-main-link" href="workbooks/00-multi-user-environments-with-postgis-geoserver-and-qgis[bnhr].pdf" target="_blank" rel="noopener">
           <div class="card-accent"></div>
@@ -530,6 +586,103 @@
       </div>
       -->
      
+    </div>
+
+    <div class="section-label">Examples</div>
+    <div class="card-grid">
+
+      <!-- Leaflet example -->
+      <div class="card example">
+        <a class="card-main-link" href="/examples/webmaps/sample-leaflet.html" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">webmap</div>
+            <div class="card-title">Single HTML webmap using Leaflet</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-code-link" href="examples/code/sample-leaflet.zip" target="_blank" rel="noopener">
+          <span class="code-icon">&#128196;</span>Code
+        </a>
+      </div>
+
+      <!-- MapLibre examples -->
+      <div class="card example">
+        <a class="card-main-link" href="/examples/webmaps/sample-maplibre.html" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">webmap</div>
+            <div class="card-title">Single HTML webmap using MapLibre</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-code-link" href="examples/code/sample-maplibre.zip" target="_blank" rel="noopener">
+          <span class="code-icon">&#128196;</span>Code
+        </a>
+      </div>
+
+      <!-- Sample Dashboard-type webmap examples -->
+      <div class="card example">
+        <a class="card-main-link" href="/examples/webmaps/sample-dashboard-type.html" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">webmap</div>
+            <div class="card-title">Single HTML webmap with more complex user interactions</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-code-link" href="examples/code/sample-dashboard-type.zip" target="_blank" rel="noopener">
+          <span class="code-icon">&#128196;</span>Code
+        </a>
+      </div>
+
+      <!-- Streamlit example -->
+      <div class="card example">
+        <a class="card-main-link" href="examples/code/sample-streamlit.zip" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">streamlit</div>
+            <div class="card-title">Sample dashboard with streamlit</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-code-link" href="examples/code/sample-streamlit.zip" target="_blank" rel="noopener">
+          <span class="code-icon">&#128196;</span>Code
+        </a>
+      </div>
+
+      <!-- Observable Framework example -->
+      <div class="card example">
+        <a class="card-main-link" href="examples/code/sample-observable-framework.zip" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">streamlit</div>
+            <div class="card-title">Sample dashboard with Observable Framework</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-code-link" href="examples/code/sample-observable-framework.zip" target="_blank" rel="noopener">
+          <span class="code-icon">&#128196;</span>Code
+        </a>
+      </div>
+
+      <!-- Evidence example -->
+      <div class="card example">
+        <a class="card-main-link" href="examples/code/sample-evidence.zip" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">streamlit</div>
+            <div class="card-title">Sample dashboard with Evidence</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-code-link" href="examples/code/sample-evidence.zip" target="_blank" rel="noopener">
+          <span class="code-icon">&#128196;</span>Code
+        </a>
+      </div>
+
+      
+
     </div>
 
     <div class="section-label">Links to Other Resources</div>
@@ -703,6 +856,42 @@
           <div class="link-item-desc">Open-source WebGL-based mapping library — supports vector tiles, PMTiles, and JSON style specifications.</div>
         </div>
         <div class="link-item-badges"><span class="topic-badge web-map">Web Mapping</span><span class="topic-badge pmtiles">PMTiles</span></div>
+        <div class="link-item-arrow">&#8594;</div>
+      </a>
+
+      <a class="link-item" href="https://docs.streamlit.io/" target="_blank" rel="noopener">
+        <div class="link-item-body">
+          <div class="link-item-title">Streamlit Documentation</div>
+          <div class="link-item-desc">Build and share interactive data apps in pure Python — no front-end experience required.</div>
+        </div>
+        <div class="link-item-badges"><span class="topic-badge streamlit">Streamlit</span></div>
+        <div class="link-item-arrow">&#8594;</div>
+      </a>
+
+      <a class="link-item" href="https://observablehq.com/" target="_blank" rel="noopener">
+        <div class="link-item-body">
+          <div class="link-item-title">Observable</div>
+          <div class="link-item-desc">Collaborative JavaScript notebook platform for building and sharing live data visualizations.</div>
+        </div>
+        <div class="link-item-badges"><span class="topic-badge observable">Observable</span></div>
+        <div class="link-item-arrow">&#8594;</div>
+      </a>
+
+      <a class="link-item" href="https://observablehq.com/framework/" target="_blank" rel="noopener">
+        <div class="link-item-body">
+          <div class="link-item-title">Observable Framework</div>
+          <div class="link-item-desc">Static-site framework for building fast, self-contained data apps and dashboards from Markdown and JavaScript.</div>
+        </div>
+        <div class="link-item-badges"><span class="topic-badge observable">Observable</span></div>
+        <div class="link-item-arrow">&#8594;</div>
+      </a>
+
+      <a class="link-item" href="https://evidence.dev/" target="_blank" rel="noopener">
+        <div class="link-item-body">
+          <div class="link-item-title">Evidence</div>
+          <div class="link-item-desc">Code-driven BI tool — write SQL and Markdown to build polished data reports and dashboards.</div>
+        </div>
+        <div class="link-item-badges"><span class="topic-badge evidence">Evidence</span></div>
         <div class="link-item-arrow">&#8594;</div>
       </a>
 

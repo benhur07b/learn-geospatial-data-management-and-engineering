@@ -1,1 +1,48 @@
 **drafts**
+
+# ── Node.js ──────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+
+# ── Build output ──────────────────────────────────────────────────────────────
+build/
+dist/
+out/
+
+# ── React / Create React App ──────────────────────────────────────────────────
+# (CRA writes to build/, Vite to dist/ — covered above)
+
+# ── Next.js ───────────────────────────────────────────────────────────────────
+.next/
+.vercel/
+
+# ── SvelteKit (Evidence) ──────────────────────────────────────────────────────
+.svelte-kit/
+
+# ── Evidence ──────────────────────────────────────────────────────────────────
+.evidence/template
+.evidence/meta
+static/data
+
+# ── Observable Framework ──────────────────────────────────────────────────────
+.observablehq/cache/
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[oc]
+*.egg-info/
+.venv/
+venv/
+
+# ── Environment variables ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

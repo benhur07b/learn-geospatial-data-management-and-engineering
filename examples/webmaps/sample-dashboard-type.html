@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI4CAF Dashboard</title>
+  <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet">
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #f0f0f0;
+    }
+
+    /* ── Header ── */
+    #app-header {
+      background: #7DD8D9;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 14px;
+      height: 56px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .header-logo {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+    }
+    #header-title {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a2e2e;
+      line-height: 1.3;
+    }
+    .header-badge {
+      background: white;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: bold;
+      color: #2a5f5f;
+      text-align: center;
+      line-height: 1.2;
+      padding: 4px;
+      border: 1.5px solid rgba(0,0,0,0.1);
+    }
+
+    /* ── Main layout ── */
+    #main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: 210px;
+      background: #ffffff;
+      border-right: 1px solid #d8d8d8;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    #sidebar::-webkit-scrollbar { width: 5px; }
+    #sidebar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+    /* ── Accordion ── */
+    .accordion {
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .acc-header {
+      display: flex;
+      align-items: center;
+      padding: 9px 10px;
+      cursor: pointer;
+      user-select: none;
+      background: white;
+      gap: 8px;
+    }
+    .acc-header:hover { background: #f7f7f7; }
+
+    .step-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #4DBFC4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: white;
+    }
+    .step-icon svg { display: block; }
+
+    .step-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .step-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #222;
+      letter-spacing: 0.02em;
+    }
+    .step-value {
+      font-size: 10px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .acc-arrow {
+      font-size: 11px;
+      color: #888;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .acc-arrow.open { transform: rotate(0deg); }
+    .acc-arrow.closed { transform: rotate(-90deg); }
+
+    .acc-body {
+      padding: 8px 10px 10px;
+      display: none;
+    }
+    .acc-body.open { display: block; }
+
+    /* ── Search row ── */
+    .search-row {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 3px 7px;
+      margin-bottom: 7px;
+      gap: 5px;
+      background: white;
+    }
+    .search-row input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 11px;
+      color: #333;
+      background: transparent;
+    }
+    .search-row input::placeholder { color: #aaa; }
+    .search-icon { color: #aaa; font-size: 11px; }
+
+    /* ── Select-all row ── */
+    .select-all-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 2px 6px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 4px;
+    }
+    .select-all-row input[type="checkbox"] {
+      accent-color: #4DBFC4;
+      cursor: pointer;
+    }
+    .select-all-row label {
+      font-size: 10.5px;
+      color: #777;
+      cursor: pointer;
+    }
+
+    /* ── Checkbox list ── */
+    .cb-list {
+      list-style: none;
+      max-height: 210px;
+      overflow-y: auto;
+    }
+    .cb-list::-webkit-scrollbar { width: 4px; }
+    .cb-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+    .cb-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 4px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .cb-item:hover { background: #eef8f8; }
+    .cb-item.active { background: #d9f0f1; }
+    .cb-item input[type="checkbox"] {
+      accent-color: #4DBFC4;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .cb-item label {
+      font-size: 11.5px;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    .swatch.dot { border-radius: 50%; }
+
+    /* ── Action buttons ── */
+    .action-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 9px;
+    }
+    .btn-action {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+      background: white;
+      color: #333;
+      font-family: inherit;
+    }
+    .btn-action:hover { background: #f0f0f0; }
+
+    /* ── Map ── */
+    #map {
+      flex: 1;
+      position: relative;
+    }
+
+    /* ── No-data overlay ── */
+    #no-data-msg {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.92);
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 16px 24px;
+      font-size: 13px;
+      color: #555;
+      pointer-events: none;
+      z-index: 10;
+      text-align: center;
+    }
+
+    /* MapLibre overrides */
+    .maplibregl-popup-content {
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 5px;
+    }
+    .maplibregl-popup-content strong { color: #2a6464; }
+    .maplibregl-ctrl-bottom-left { margin-bottom: 4px; }
+    .maplibregl-ctrl-bottom-right { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ────────────────────────────────── -->
+<header id="app-header">
+  <svg class="header-logo" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="20" cy="20" r="19" fill="white" stroke="#4DBFC4" stroke-width="1.5"/>
+    <circle cx="20" cy="20" r="13" fill="none" stroke="#4DBFC4" stroke-width="1"/>
+    <ellipse cx="20" cy="20" rx="7" ry="13" fill="none" stroke="#4DBFC4" stroke-width="1"/>
+    <line x1="7" y1="20" x2="33" y2="20" stroke="#4DBFC4" stroke-width="1"/>
+    <line x1="10" y1="14" x2="30" y2="14" stroke="#4DBFC4" stroke-width="0.7"/>
+    <line x1="10" y1="26" x2="30" y2="26" stroke="#4DBFC4" stroke-width="0.7"/>
+  </svg>
+  <div id="header-title">
+    Artificial Intelligence for Census of Agriculture and Fisheries (AI4CAF) Dashboard
+  </div>
+  <div class="header-badge">
+    <span>2023<br>CAF<br>Census</span>
+  </div>
+</header>
+
+<!-- ── Main ──────────────────────────────────── -->
+<div id="main">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+
+    <!-- Step 1: Data -->
+    <div class="accordion" id="acc-data">
+      <div class="acc-header" onclick="toggleAcc('data')">
+        <div class="step-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+            <path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/>
+          </svg>
+        </div>
+        <div class="step-meta">
+          <div class="step-label">STEP 1: Data</div>
+          <div class="step-value" id="data-step-value">No category selected</div>
+        </div>
+        <span class="acc-arrow open" id="data-arrow">▼</span>
+      </div>
+      <div class="acc-body open" id="data-body">
+        <div class="search-row">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search..." id="data-search" oninput="filterCbList(this,'data-cb-list')">
+        </div>
+        <div class="select-all-row">
+          <input type="checkbox" id="data-all" onchange="toggleAll('data', this.checked)">
+          <label for="data-all">Select / deselect all</label>
+        </div>
+        <ul class="cb-list" id="data-cb-list">
+          <li class="cb-item" id="li-coconut">
+            <input type="checkbox" id="cb-coconut" data-layer="coconut" onchange="onLayerChange(this)">
+            <label for="cb-coconut"><span class="swatch dot" style="background:#FFD700"></span>Coconut</label>
+          </li>
+          <li class="cb-item" id="li-fishcage">
+            <input type="checkbox" id="cb-fishcage" data-layer="fishcage" onchange="onLayerChange(this)">
+            <label for="cb-fishcage"><span class="swatch dot" style="background:#AEDFF7"></span>Fish Cage</label>
+          </li>
+          <li class="cb-item" id="li-fishpen">
+            <input type="checkbox" id="cb-fishpen" data-layer="fishpen" onchange="onLayerChange(this)">
+            <label for="cb-fishpen"><span class="swatch dot" style="background:#5B9BD5"></span>Fish Pen</label>
+          </li>
+          <li class="cb-item" id="li-fishpond">
+            <input type="checkbox" id="cb-fishpond" data-layer="fishpond" onchange="onLayerChange(this)">
+            <label for="cb-fishpond"><span class="swatch" style="background:#1A3B8C"></span>Fishpond</label>
+          </li>
+          <li class="cb-item" id="li-mango">
+            <input type="checkbox" id="cb-mango" data-layer="mango" onchange="onLayerChange(this)">
+            <label for="cb-mango"><span class="swatch" style="background:#E05C3A;border-color:#C03000"></span>Mango</label>
+          </li>
+          <li class="cb-item" id="li-palay1">
+            <input type="checkbox" id="cb-palay1" data-layer="palay1" onchange="onLayerChange(this)">
+            <label for="cb-palay1"><span class="swatch" style="background:#7EE084"></span>Palay Semester 1</label>
+          </li>
+          <li class="cb-item" id="li-palay2">
+            <input type="checkbox" id="cb-palay2" data-layer="palay2" onchange="onLayerChange(this)">
+            <label for="cb-palay2"><span class="swatch" style="background:#228B22"></span>Palay Semester 2</label>
+          </li>
+          <li class="cb-item" id="li-sugarcane">
+            <input type="checkbox" id="cb-sugarcane" data-layer="sugarcane" onchange="onLayerChange(this)">
+            <label for="cb-sugarcane"><span class="swatch" style="background:#20B2AA"></span>Sugarcane</label>
+          </li>
+        </ul>
+        <div class="action-row">
+          <button class="btn-action" onclick="resetStep('data')">Reset</button>
+          <button class="btn-action" onclick="selectAllStep('data')">Select all</button>
+        </div>
+      </div>
+    </div><!-- /Step 1 -->
+
+    <!-- Step 2: Location -->
+    <div class="accordion" id="acc-location">
+      <div class="acc-header" onclick="toggleAcc('location')">
+        <div class="step-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/>
+          </svg>
+        </div>
+        <div class="step-meta">
+          <div class="step-label">STEP 2: Location</div>
+          <div class="step-value" id="location-step-value">No category selected</div>
+        </div>
+        <span class="acc-arrow open" id="location-arrow">▼</span>
+      </div>
+      <div class="acc-body open" id="location-body">
+        <div class="search-row">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search..." id="location-search" oninput="filterCbList(this,'location-cb-list')">
+        </div>
+        <div class="select-all-row">
+          <input type="checkbox" id="location-all" onchange="toggleAll('location', this.checked)">
+          <label for="location-all">Select / deselect all</label>
+        </div>
+        <ul class="cb-list" id="location-cb-list">
+          <!-- Populated by JS -->
+        </ul>
+        <div class="action-row">
+          <button class="btn-action" onclick="resetStep('location')">Reset</button>
+          <button class="btn-action" onclick="selectAllStep('location')">Select all</button>
+        </div>
+      </div>
+    </div><!-- /Step 2 -->
+
+  </aside><!-- /sidebar -->
+
+  <!-- Map -->
+  <div id="map">
+    <div id="no-data-msg">Select a data layer from Step 1 to begin.</div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+/* ════════════════════════════════════════════
+   DATA DEFINITIONS
+════════════════════════════════════════════ */
+const PROVINCES = {
+  'Davao del Norte':  { bbox: [125.00, 7.00, 125.90, 7.90] },
+  'Davao del Sur':    { bbox: [124.90, 6.20, 125.60, 7.10] },
+  'Davao Occidental': { bbox: [124.95, 5.50, 125.50, 6.30] },
+  'Davao Oriental':   { bbox: [125.80, 6.50, 126.50, 7.70] },
+  'Guimaras':         { bbox: [122.45, 10.50, 122.76, 10.86] },
+  'Iloilo':           { bbox: [122.10, 10.50, 122.76, 11.20] },
+  'Isabela':          { bbox: [121.20, 16.50, 122.40, 17.80] },
+  'Nueva Ecija':      { bbox: [120.50, 15.20, 121.30, 16.10] },
+  'Pangasinan':       { bbox: [119.80, 15.60, 120.90, 16.70] },
+  'Pampanga':         { bbox: [120.45, 14.85, 120.95, 15.45] },
+  'Quezon':           { bbox: [121.20, 13.50, 122.40, 14.80] },
+  'Quirino':          { bbox: [121.50, 16.00, 122.10, 16.80] },
+  'Tarlac':           { bbox: [120.15, 15.30, 120.80, 15.95] },
+};
+
+const LAYERS = {
+  coconut:  { label: 'Coconut',        type: 'point',   color: '#FFD700', outlineColor: '#B89800',
+               provinces: ['Quezon','Davao del Norte','Davao del Sur','Davao Oriental'], count: 300 },
+  fishcage: { label: 'Fish Cage',      type: 'point',   color: '#AEDFF7', outlineColor: '#4A9EC4',
+               provinces: ['Pangasinan','Iloilo'], count: 150 },
+  fishpen:  { label: 'Fish Pen',       type: 'point',   color: '#5B9BD5', outlineColor: '#2265A5',
+               provinces: ['Pangasinan','Pampanga'], count: 120 },
+  fishpond: { label: 'Fishpond',       type: 'polygon', color: '#1A3B8C', outlineColor: '#4A7BD5',
+               provinces: ['Pangasinan','Pampanga','Iloilo'], count: 120 },
+  mango:    { label: 'Mango',          type: 'polygon', color: '#E05C3A', outlineColor: '#C04020',
+               provinces: ['Guimaras','Iloilo','Quezon'], count: 100 },
+  palay1:   { label: 'Palay Semester 1', type: 'polygon', color: '#7EE084', outlineColor: '#4AB84F',
+               provinces: ['Isabela','Nueva Ecija','Tarlac','Quirino'], count: 140 },
+  palay2:   { label: 'Palay Semester 2', type: 'polygon', color: '#228B22', outlineColor: '#166016',
+               provinces: ['Isabela','Nueva Ecija'], count: 130 },
+  sugarcane:{ label: 'Sugarcane',      type: 'polygon', color: '#20B2AA', outlineColor: '#118080',
+               provinces: ['Pampanga','Tarlac','Iloilo'], count: 110 },
+};
+
+/* ════════════════════════════════════════════
+   SEEDED RNG (for consistent sample data)
+════════════════════════════════════════════ */
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = Math.imul(1664525, s) + 1013904223 >>> 0;
+    return s / 0xFFFFFFFF;
+  };
+}
+
+/* ════════════════════════════════════════════
+   SAMPLE DATA GENERATION
+════════════════════════════════════════════ */
+function generateData() {
+  const out = {};
+  for (const [id, def] of Object.entries(LAYERS)) {
+    const rng = makeRng(id.split('').reduce((a,c) => a * 31 + c.charCodeAt(0), 0));
+    const perProv = Math.ceil(def.count / def.provinces.length);
+    const features = [];
+
+    for (const prov of def.provinces) {
+      const p = PROVINCES[prov];
+      if (!p) continue;
+      const [w, s, e, n] = p.bbox;
+      const dLng = e - w, dLat = n - s;
+
+      for (let i = 0; i < perProv; i++) {
+        const lng = w + rng() * dLng;
+        const lat = s + rng() * dLat;
+
+        if (def.type === 'point') {
+          features.push({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [lng, lat] },
+            properties: { province: prov, layer: id, label: def.label }
+          });
+        } else {
+          // Polygon size varies: ~200m–2km wide
+          const fw = 0.004 + rng() * 0.025;
+          const fh = 0.004 + rng() * 0.025;
+          const x0 = Math.min(lng, e - fw - 0.001);
+          const y0 = Math.min(lat, n - fh - 0.001);
+          const x1 = x0 + fw, y1 = y0 + fh;
+          features.push({
+            type: 'Feature',
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[ [x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0] ]]
+            },
+            properties: { province: prov, layer: id, label: def.label }
+          });
+        }
+      }
+    }
+    out[id] = { type: 'FeatureCollection', features };
+  }
+  return out;
+}
+
+const SAMPLE_DATA = generateData();
+
+/* ════════════════════════════════════════════
+   MAP INIT
+════════════════════════════════════════════ */
+const map = new maplibregl.Map({
+  container: 'map',
+  style: {
+    version: 8,
+    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+    sources: {
+      satellite: {
+        type: 'raster',
+        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        tileSize: 256,
+        attribution: '© Esri, Maxar, Earthstar Geographics'
+      }
+    },
+    layers: [{ id: 'satellite', type: 'raster', source: 'satellite' }]
+  },
+  center: [122.0, 12.0],
+  zoom: 5.2,
+  maxZoom: 19,
+  minZoom: 4
+});
+
+map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'bottom-right');
+map.addControl(new maplibregl.ScaleControl({ maxWidth: 100 }), 'bottom-left');
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+const activeLayers    = new Set();
+const activeLocations = new Set();
+let mapReady = false;
+
+/* ════════════════════════════════════════════
+   MAP LOAD: ADD SOURCES & LAYERS
+════════════════════════════════════════════ */
+map.on('load', () => {
+  mapReady = true;
+
+  for (const [id, def] of Object.entries(LAYERS)) {
+    map.addSource(`src-${id}`, { type: 'geojson', data: SAMPLE_DATA[id] });
+
+    if (def.type === 'point') {
+      map.addLayer({
+        id: `lyr-${id}`,
+        type: 'circle',
+        source: `src-${id}`,
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-color': def.color,
+          'circle-radius': ['interpolate',['linear'],['zoom'], 5,2, 10,4, 14,7],
+          'circle-opacity': 0.88,
+          'circle-stroke-color': def.outlineColor,
+          'circle-stroke-width': 0.5
+        }
+      });
+    } else {
+      map.addLayer({
+        id: `lyr-${id}-fill`,
+        type: 'fill',
+        source: `src-${id}`,
+        layout: { visibility: 'none' },
+        paint: { 'fill-color': def.color, 'fill-opacity': 0.65 }
+      });
+      map.addLayer({
+        id: `lyr-${id}`,
+        type: 'line',
+        source: `src-${id}`,
+        layout: { visibility: 'none' },
+        paint: { 'line-color': def.outlineColor, 'line-width': 0.8, 'line-opacity': 0.9 }
+      });
+    }
+
+    // Popup on click
+    const clickTarget = def.type === 'point' ? `lyr-${id}` : `lyr-${id}-fill`;
+    if (map.getLayer(clickTarget)) {
+      map.on('click', clickTarget, (e) => {
+        const p = e.features[0].properties;
+        new maplibregl.Popup({ closeButton: true, maxWidth: '220px' })
+          .setLngLat(e.lngLat)
+          .setHTML(`<strong>${p.label}</strong><br><span style="color:#555">Province: ${p.province}</span>`)
+          .addTo(map);
+      });
+      map.on('mouseenter', clickTarget, () => map.getCanvas().style.cursor = 'pointer');
+      map.on('mouseleave', clickTarget, () => map.getCanvas().style.cursor = '');
+    }
+  }
+});
+
+/* ════════════════════════════════════════════
+   PROVINCE CHECKBOX LIST (dynamic)
+════════════════════════════════════════════ */
+const locList = document.getElementById('location-cb-list');
+Object.keys(PROVINCES).sort().forEach(prov => {
+  const safeId = 'prov-' + prov.replace(/\s+/g,'-');
+  const li = document.createElement('li');
+  li.className = 'cb-item';
+  li.id = 'li-' + safeId;
+  li.innerHTML = `
+    <input type="checkbox" id="${safeId}" data-province="${prov}" onchange="onLocChange(this)">
+    <label for="${safeId}">${prov}</label>`;
+  locList.appendChild(li);
+});
+
+/* ════════════════════════════════════════════
+   ACCORDION TOGGLE
+════════════════════════════════════════════ */
+function toggleAcc(step) {
+  const body  = document.getElementById(`${step}-body`);
+  const arrow = document.getElementById(`${step}-arrow`);
+  const open  = body.classList.toggle('open');
+  arrow.classList.toggle('open',   open);
+  arrow.classList.toggle('closed', !open);
+}
+
+/* ════════════════════════════════════════════
+   LAYER CHANGE
+════════════════════════════════════════════ */
+function onLayerChange(cb) {
+  const id = cb.dataset.layer;
+  if (cb.checked) activeLayers.add(id); else activeLayers.delete(id);
+  document.getElementById(`li-${id}`).classList.toggle('active', cb.checked);
+  syncMap();
+  updateStepLabels();
+}
+
+/* ════════════════════════════════════════════
+   LOCATION CHANGE
+════════════════════════════════════════════ */
+function onLocChange(cb) {
+  const prov = cb.dataset.province;
+  if (cb.checked) activeLocations.add(prov); else activeLocations.delete(prov);
+  const safeId = 'li-prov-' + prov.replace(/\s+/g,'-');
+  document.getElementById(safeId).classList.toggle('active', cb.checked);
+  syncMap();
+  updateStepLabels();
+}
+
+/* ════════════════════════════════════════════
+   SYNC MAP (visibility + filter + zoom)
+════════════════════════════════════════════ */
+function syncMap() {
+  if (!mapReady) return;
+
+  // Build province filter expression
+  const locFilter = activeLocations.size > 0
+    ? ['match', ['get','province'], [...activeLocations], true, false]
+    : ['all'];
+
+  for (const [id, def] of Object.entries(LAYERS)) {
+    const vis = activeLayers.has(id) ? 'visible' : 'none';
+
+    if (def.type === 'point') {
+      map.setLayoutProperty(`lyr-${id}`, 'visibility', vis);
+      map.setFilter(`lyr-${id}`, locFilter);
+    } else {
+      map.setLayoutProperty(`lyr-${id}-fill`, 'visibility', vis);
+      map.setLayoutProperty(`lyr-${id}`,      'visibility', vis);
+      map.setFilter(`lyr-${id}-fill`, locFilter);
+      map.setFilter(`lyr-${id}`,      locFilter);
+    }
+  }
+
+  // No-data message
+  document.getElementById('no-data-msg').style.display =
+    activeLayers.size === 0 ? 'block' : 'none';
+
+  // ── Zoom logic ──
+  if (activeLocations.size > 0) {
+    zoomToBounds(getProvBounds([...activeLocations]));
+  } else if (activeLayers.size > 0) {
+    // Zoom to union of all active layers' province extents
+    const provs = new Set();
+    for (const id of activeLayers) LAYERS[id].provinces.forEach(p => provs.add(p));
+    zoomToBounds(getProvBounds([...provs]));
+  }
+}
+
+function getProvBounds(provs) {
+  let minLng=180, minLat=90, maxLng=-180, maxLat=-90;
+  for (const p of provs) {
+    if (!PROVINCES[p]) continue;
+    const [w,s,e,n] = PROVINCES[p].bbox;
+    if (w < minLng) minLng = w;
+    if (s < minLat) minLat = s;
+    if (e > maxLng) maxLng = e;
+    if (n > maxLat) maxLat = n;
+  }
+  return [minLng, minLat, maxLng, maxLat];
+}
+
+function zoomToBounds([w,s,e,n]) {
+  if (w === 180) return;
+  map.fitBounds([[w,s],[e,n]], { padding: 60, duration: 700 });
+}
+
+/* ════════════════════════════════════════════
+   STEP LABELS
+════════════════════════════════════════════ */
+function updateStepLabels() {
+  // Data
+  const dataEl = document.getElementById('data-step-value');
+  if (activeLayers.size === 0) {
+    dataEl.textContent = 'No category selected';
+  } else {
+    const names = [...activeLayers].map(id => LAYERS[id].label);
+    dataEl.textContent = names.length <= 2
+      ? names.join(', ')
+      : `${names[0]}, ${names[1]}... +${names.length-2}`;
+  }
+
+  // Location
+  const locEl = document.getElementById('location-step-value');
+  if (activeLocations.size === 0) {
+    locEl.textContent = 'No category selected';
+  } else {
+    const arr = [...activeLocations];
+    locEl.textContent = arr.length <= 2
+      ? arr.join(', ')
+      : `${arr[0]}... +${arr.length-1}`;
+  }
+
+  // Page title
+  const layerNames = [...activeLayers].map(id => LAYERS[id].label);
+  document.title = layerNames.length
+    ? `AI4CAF Dashboard: ${layerNames.join(', ')}`
+    : 'AI4CAF Dashboard';
+}
+
+/* ════════════════════════════════════════════
+   RESET / SELECT ALL
+════════════════════════════════════════════ */
+function resetStep(step) {
+  if (step === 'data') {
+    document.querySelectorAll('#data-cb-list input').forEach(cb => {
+      cb.checked = false;
+      document.getElementById(`li-${cb.dataset.layer}`).classList.remove('active');
+    });
+    document.getElementById('data-all').checked = false;
+    activeLayers.clear();
+  } else {
+    document.querySelectorAll('#location-cb-list input').forEach(cb => {
+      cb.checked = false;
+      const safeId = 'li-prov-' + cb.dataset.province.replace(/\s+/g,'-');
+      document.getElementById(safeId).classList.remove('active');
+    });
+    document.getElementById('location-all').checked = false;
+    activeLocations.clear();
+  }
+  syncMap();
+  updateStepLabels();
+}
+
+function selectAllStep(step) {
+  if (step === 'data') {
+    document.querySelectorAll('#data-cb-list input').forEach(cb => {
+      cb.checked = true;
+      document.getElementById(`li-${cb.dataset.layer}`).classList.add('active');
+      activeLayers.add(cb.dataset.layer);
+    });
+    document.getElementById('data-all').checked = true;
+  } else {
+    document.querySelectorAll('#location-cb-list input').forEach(cb => {
+      cb.checked = true;
+      const safeId = 'li-prov-' + cb.dataset.province.replace(/\s+/g,'-');
+      document.getElementById(safeId).classList.add('active');
+      activeLocations.add(cb.dataset.province);
+    });
+    document.getElementById('location-all').checked = true;
+  }
+  syncMap();
+  updateStepLabels();
+}
+
+function toggleAll(step, checked) {
+  if (checked) selectAllStep(step); else resetStep(step);
+}
+
+/* ════════════════════════════════════════════
+   SEARCH FILTER
+════════════════════════════════════════════ */
+function filterCbList(input, listId) {
+  const q = input.value.trim().toLowerCase();
+  document.querySelectorAll(`#${listId} .cb-item`).forEach(li => {
+    const text = li.querySelector('label').textContent.toLowerCase();
+    li.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

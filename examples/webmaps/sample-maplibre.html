@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Part 2a — MapLibre GL JS + GeoServer WMS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet">
+  <style>
+    html, body, #map { height: 100%; margin: 0; padding: 0; }
+
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1;
+      background: rgba(12, 35, 64, 0.88);
+      color: #f5f5f5;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13px;
+      padding: 12px 16px;
+      border-radius: 6px;
+      max-width: 300px;
+      line-height: 1.5;
+    }
+    #info strong { color: #3791e0; }
+    #info code {
+      font-family: monospace;
+      font-size: 11px;
+      background: rgba(255,255,255,0.1);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    #wms-status {
+      margin-top: 8px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .status-ok   { background: rgba(88,150,50,0.4);  border: 1px solid #589632; }
+    .status-warn { background: rgba(255,165,0,0.25); border: 1px solid #ffa500; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="info">
+    <strong>Part 2a — MapLibre GL JS</strong><br>
+    WMS raster source from GeoServer.<br>
+    Layer: <code>psa:palay_distribution</code>
+    <div id="wms-status" class="status-warn">
+      WMS layer requires GeoServer running at<br>
+      <code>http://localhost:8080/geoserver</code>
+    </div>
+  </div>
+
+  <script>
+    const GEOSERVER = 'http://localhost:8080/geoserver';
+    const WMS_LAYER = 'psa:palay_distribution';
+
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://demotiles.maplibre.org/style.json',
+      center: [122.5, 12.5],
+      zoom: 5
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+    map.on('load', () => {
+      map.addSource('palay', {
+        type: 'raster',
+        tiles: [
+          GEOSERVER + '/psa/wms' +
+          '?service=WMS&version=1.1.1' +
+          '&request=GetMap' +
+          '&layers=' + WMS_LAYER +
+          '&format=image/png' +
+          '&transparent=true' +
+          '&width=256&height=256' +
+          '&srs=EPSG:3857' +
+          '&bbox={bbox-epsg-3857}'
+        ],
+        tileSize: 256
+      });
+
+      map.addLayer({
+        id: 'palay-layer',
+        type: 'raster',
+        source: 'palay',
+        paint: { 'raster-opacity': 0.85 }
+      });
+
+      // Check if GeoServer is reachable
+      fetch(GEOSERVER + '/web/', { mode: 'no-cors' })
+        .then(() => {
+          const el = document.getElementById('wms-status');
+          el.textContent = 'GeoServer reachable — WMS layer active.';
+          el.className = 'status-ok';
+        })
+        .catch(() => {
+          // status-warn message stays
+        });
+    });
+  </script>
+</body>
+</html>
