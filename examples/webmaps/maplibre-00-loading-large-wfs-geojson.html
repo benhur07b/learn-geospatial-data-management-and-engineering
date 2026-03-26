@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<!--
+  MAP — WFS LAYER ONLY
+  ==========================
+  A minimal map that loads a single WFS layer from GeoServer.
+
+  The WFS endpoint returns GeoJSON which MapLibre loads as a
+  "geojson" source — no PMTiles, no vector tiles, no extra libraries.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading a large GeoJSON via WFS</title>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <link  href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #map { width: 100%; height: 100%; }
+
+    #panel {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      border-radius: 6px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      font-family: sans-serif;
+      font-size: 13px;
+      z-index: 1;
+    }
+
+    #panel h4 {
+      margin: 0 0 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+    }
+
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .layer-item label { cursor: pointer; user-select: none; }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      background: #4daf4a;
+    }
+
+    input[type="checkbox"] { cursor: pointer; }
+
+    #status {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #888;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div id="panel">
+    <h4>Layers</h4>
+    <div class="layer-item">
+      <input type="checkbox" id="toggle-wfs" checked />
+      <span class="swatch"></span>
+      <label for="toggle-wfs">ADM3 — WFS (GeoServer)</label>
+    </div>
+    <div id="status">Loading WFS layer…</div>
+  </div>
+
+  <script>
+    const WFS_URL =
+      "http://localhost/geoserver/geonode/ows" +
+      "?service=WFS" +
+      "&version=1.0.0" +
+      "&request=GetFeature" +
+      "&typeName=geonode%3Aphl_adm3" +
+      "&outputFormat=application%2Fjson";
+
+    const map = new maplibregl.Map({
+      container: "map",
+      style: {
+        version: 8,
+        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+        sources: {
+          "basemap": {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "&copy; OpenStreetMap contributors"
+          },
+          "wfs-adm3": {
+            type: "geojson",
+            data: WFS_URL
+          }
+        },
+        layers: [
+          {
+            id:     "basemap",
+            type:   "raster",
+            source: "basemap"
+          },
+          {
+            id:     "wfs-adm3-fill",
+            type:   "fill",
+            source: "wfs-adm3",
+            paint: {
+              "fill-color":   "#4daf4a",
+              "fill-opacity": 0.3
+            }
+          },
+          {
+            id:     "wfs-adm3-line",
+            type:   "line",
+            source: "wfs-adm3",
+            paint: {
+              "line-color": "#4daf4a",
+              "line-width": 1.2
+            }
+          }
+        ]
+      },
+      center: [122, 12],
+      zoom: 5
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    // Toggle fill + line together when the checkbox changes.
+    document.getElementById("toggle-wfs").addEventListener("change", function () {
+      const v = this.checked ? "visible" : "none";
+      map.setLayoutProperty("wfs-adm3-fill", "visibility", v);
+      map.setLayoutProperty("wfs-adm3-line", "visibility", v);
+    });
+
+    // Update status once the source finishes loading.
+    map.on("sourcedata", (e) => {
+      if (e.sourceId === "wfs-adm3" && e.isSourceLoaded) {
+        document.getElementById("status").textContent = "WFS layer loaded.";
+      }
+    });
+
+    map.on("error", (e) => {
+      if (e.sourceId === "wfs-adm3") {
+        document.getElementById("status").textContent =
+          "WFS layer failed to load. Is GeoServer running?";
+      }
+    });
+  </script>
+</body>
+</html>

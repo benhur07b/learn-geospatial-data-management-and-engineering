@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<!--
+  MAP 02 — CATEGORICAL STYLING
+  =============================
+  Building on map_01, we now replace the simple fixed colors with
+  categorical styling — each feature is colored based on the value of
+  an attribute (a field in its data).
+
+  New concepts introduced in this file:
+  ──────────────────────────────────────
+  1. MapLibre EXPRESSIONS
+     Instead of a plain color string like "#377eb8", we can give a layer
+     a *data expression* — a rule that MapLibre evaluates for every feature
+     as it draws the map. Expressions are written as JSON arrays.
+     Example: ["get", "ADM1_PCODE"] → returns the ADM1_PCODE value of
+     the feature currently being drawn.
+
+  2. PSA PCODE FORMAT
+     Philippine Standard Geographic Codes look like "PH010000000".
+     The first two characters are always "PH".
+     Characters 3-4 (index 2-3) are the region code: "01" through "17".
+     Characters 3-6 (index 2-5) are the province code: "0128", etc.
+     We extract these numeric parts to assign a color from a palette.
+
+  3. STYLE TOGGLE
+     A pair of radio buttons lets the user switch between coloring by
+     ADM1 (region) or ADM2 (province) on the fly using setPaintProperty().
+
+  Changes from map_01:
+  ────────────────────
+  + PALETTE array — 20 distinct colors
+  + makeCategoryColorExpr() — builds the MapLibre color expression
+  + COLOR_EXPRS — pre-computed expressions for ADM1 and ADM2
+  + "Categorize by" radio buttons in the panel
+  + applyStyle() — swaps the color expression when the radio changes
+  - Removed per-source fixed color (no longer needed)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 2 — Categorical Styling</title>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <link  href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #map { width: 100%; height: 100%; }
+
+    #panel {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      border-radius: 6px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      font-family: sans-serif;
+      font-size: 13px;
+      z-index: 1;
+      width: 220px;
+    }
+
+    .panel-section { margin-bottom: 12px; }
+    .panel-section:last-child { margin-bottom: 0; }
+
+    .panel-section h4 {
+      margin: 0 0 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 10px 0;
+    }
+
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .layer-item:last-child { margin-bottom: 0; }
+    .layer-item label { cursor: pointer; user-select: none; }
+
+    /* NEW: style radio button rows */
+    .style-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .style-item:last-child { margin-bottom: 0; }
+    .style-item label { cursor: pointer; user-select: none; }
+
+    input[type="checkbox"],
+    input[type="radio"] { cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div id="panel">
+    <div class="panel-section" id="layer-section">
+      <h4>Layers</h4>
+    </div>
+
+    <hr class="divider">
+
+    <!--
+      NEW: "Categorize by" section
+      Radio buttons let the user choose which PCODE field drives the colors.
+      Only one option can be active at a time (that's what radio buttons do).
+      The "value" attribute is the PCODE field name we'll pass to applyStyle().
+    -->
+    <div class="panel-section">
+      <h4>Categorize by</h4>
+      <div class="style-item">
+        <input type="radio" name="style" id="style-adm1" value="ADM1_PCODE" checked>
+        <label for="style-adm1">ADM1 (Region)</label>
+      </div>
+      <div class="style-item">
+        <input type="radio" name="style" id="style-adm2" value="ADM2_PCODE">
+        <label for="style-adm2">ADM2 (Province)</label>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // DATA SOURCES  (unchanged from map_01)
+    // =========================================================================
+    const SOURCES = [
+      { id: "phl-adm3", url: "http://localhost:9000/psa-afcd/pmtiles/phl_adm3.pmtiles", label: "ADM3 (Municipality)" },
+      { id: "phl-adm4", url: "http://localhost:9000/psa-afcd/pmtiles/phl_adm4.pmtiles", label: "ADM4 (Barangay)" },
+    ];
+
+
+    // =========================================================================
+    // NEW: COLOR PALETTE AND EXPRESSION BUILDER
+    // =========================================================================
+
+    //
+    // A palette of 20 visually distinct colors.
+    // We'll assign each unique PCODE value a color by mapping its numeric
+    // portion modulo 20 to a position in this array.
+    //
+    const PALETTE = [
+      "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
+      "#911eb4", "#42d4f4", "#f032e6", "#bfef45", "#fabed4",
+      "#469990", "#dcbeff", "#9a6324", "#e6beff", "#800000",
+      "#aaffc3", "#808000", "#ffd8b1", "#000075", "#a9a9a9"
+    ];
+
+    //
+    // makeCategoryColorExpr(field, sliceStart, sliceEnd)
+    // --------------------------------------------------
+    // Builds a MapLibre "case" expression that assigns a palette color to
+    // each feature based on the numeric part of a PCODE field.
+    //
+    // How it works, step by step:
+    //
+    //   1. ["get", field]
+    //      → read the PCODE value of the current feature, e.g. "PH010000000"
+    //
+    //   2. ["slice", ..., sliceStart, sliceEnd]
+    //      → extract a substring, e.g. slice(2, 4) on "PH010000000" → "01"
+    //         (sliceStart=2 skips the "PH" prefix)
+    //
+    //   3. ["to-number", ...]
+    //      → convert the string "01" to the number 1
+    //
+    //   4. ["%", ..., PALETTE.length]
+    //      → modulo: number % 20 gives a value between 0 and 19
+    //         This maps any PCODE to a slot in our 20-color palette.
+    //
+    //   5. ["case", cond0, color0, cond1, color1, ..., fallback]
+    //      → check which slot matched and return the corresponding color
+    //
+    // For ADM1_PCODE we slice characters 2–4 (the 2-digit region code).
+    // For ADM2_PCODE we slice characters 2–6 (the 4-digit province code).
+    //
+    function makeCategoryColorExpr(field, sliceStart, sliceEnd) {
+      const n = PALETTE.length;
+
+      // Build the modulo expression once and reuse it in every condition.
+      const moduloExpr = [
+        "%",
+        ["to-number", ["slice", ["get", field], sliceStart, sliceEnd]],
+        n
+      ];
+
+      // Build the case branches: for each palette index i, add
+      //   condition: (moduloExpr == i)
+      //   output:    PALETTE[i]
+      const args = [];
+      for (let i = 0; i < n; i++) {
+        args.push(["==", moduloExpr, i]);  // condition
+        args.push(PALETTE[i]);              // color to use if condition is true
+      }
+      args.push("#cccccc");  // fallback color if nothing matched
+
+      return ["case", ...args];
+    }
+
+    //
+    // Pre-compute both expressions once so switching between them is instant.
+    // ADM1: slice chars 2–4 → 2-digit region  (e.g. "01" from "PH01...")
+    // ADM2: slice chars 2–6 → 4-digit province (e.g. "0128" from "PH0128...")
+    //
+    const COLOR_EXPRS = {
+      ADM1_PCODE: makeCategoryColorExpr("ADM1_PCODE", 2, 4),
+      ADM2_PCODE: makeCategoryColorExpr("ADM2_PCODE", 2, 6),
+    };
+
+
+    // =========================================================================
+    // PMTiles PROTOCOL REGISTRATION  (unchanged from map_01)
+    // =========================================================================
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+
+
+    // =========================================================================
+    // MAP INITIALISATION  (unchanged from map_01)
+    // =========================================================================
+    const map = new maplibregl.Map({
+      container: "map",
+      style: {
+        version: 8,
+        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+        sources: {
+          "basemap": {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "&copy; OpenStreetMap contributors"
+          },
+          ...Object.fromEntries(
+            SOURCES.map(s => [s.id, { type: "vector", url: `pmtiles://${s.url}` }])
+          )
+        },
+        layers: [{ id: "basemap", type: "raster", source: "basemap" }]
+      },
+      center: [122, 12],
+      zoom: 5
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    let layerDefs = [];
+
+
+    // =========================================================================
+    // NEW: APPLY STYLE
+    // =========================================================================
+    //
+    // applyStyle(field) swaps the color expression on all active layers.
+    // setPaintProperty() lets us change a single paint property of an existing
+    // layer without rebuilding the whole style — very fast.
+    //
+    function applyStyle(field) {
+      const colorExpr = COLOR_EXPRS[field];
+      layerDefs.forEach(({ mapLayerId }) => {
+        if (map.getLayer(`${mapLayerId}-fill`)) {
+          map.setPaintProperty(`${mapLayerId}-fill`, "fill-color", colorExpr);
+          map.setPaintProperty(`${mapLayerId}-line`, "line-color", colorExpr);
+        }
+      });
+    }
+
+    //
+    // Listen for radio button changes and call applyStyle with the
+    // selected field name (stored in the radio's "value" attribute).
+    //
+    document.querySelectorAll("input[name='style']").forEach(radio => {
+      radio.addEventListener("change", e => applyStyle(e.target.value));
+    });
+
+
+    // =========================================================================
+    // LAYER VISIBILITY TOGGLE  (unchanged from map_01)
+    // =========================================================================
+    function toggleLayer(layerId, visible) {
+      const v = visible ? "visible" : "none";
+      map.setLayoutProperty(`${layerId}-fill`, "visibility", v);
+      map.setLayoutProperty(`${layerId}-line`, "visibility", v);
+    }
+
+    function buildLayerSelector(layers) {
+      const section = document.getElementById("layer-section");
+      layers.forEach(({ id, label }) => {
+        const item = document.createElement("div");
+        item.className = "layer-item";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = `toggle-${id}`;
+        checkbox.checked = true;
+        checkbox.addEventListener("change", () => toggleLayer(id, checkbox.checked));
+        const labelEl = document.createElement("label");
+        labelEl.htmlFor = `toggle-${id}`;
+        labelEl.textContent = label;
+        item.append(checkbox, labelEl);
+        section.appendChild(item);
+      });
+    }
+
+
+    // =========================================================================
+    // MAP LOAD — ADD VECTOR LAYERS
+    // =========================================================================
+    //
+    // Same as map_01, except we now use the categorical color expression
+    // (COLOR_EXPRS["ADM1_PCODE"]) instead of a fixed color.
+    //
+    map.on("load", async () => {
+
+      // Start with ADM1 (region) coloring.
+      const initialColorExpr = COLOR_EXPRS["ADM1_PCODE"];
+
+      await Promise.all(SOURCES.map(async (src) => {
+        const p = new pmtiles.PMTiles(src.url);
+        const [header, metadata] = await Promise.all([p.getHeader(), p.getMetadata()]);
+
+        const sourceLayer = (metadata?.vector_layers ?? [])[0]?.id
+                            ?? src.id.replace("phl-", "phl_");
+        const mapLayerId  = sourceLayer;
+        layerDefs.push({ mapLayerId, source: src.id, sourceLayer, label: src.label });
+
+        // ── Fill layer ───────────────────────────────────────────────────────
+        // "fill-color" now receives an expression instead of a plain string.
+        map.addLayer({
+          id:             `${mapLayerId}-fill`,
+          type:           "fill",
+          source:         src.id,
+          "source-layer": sourceLayer,
+          paint: {
+            "fill-color":   initialColorExpr,   // ← expression, not a fixed color
+            "fill-opacity": 0.4
+          }
+        });
+
+        // ── Line layer ───────────────────────────────────────────────────────
+        map.addLayer({
+          id:             `${mapLayerId}-line`,
+          type:           "line",
+          source:         src.id,
+          "source-layer": sourceLayer,
+          paint: {
+            "line-color": initialColorExpr,     // ← same expression for borders
+            "line-width": 0.8
+          }
+        });
+
+        if (src.id === "phl-adm3" && header.minLon !== undefined) {
+          map.fitBounds(
+            [[header.minLon, header.minLat], [header.maxLon, header.maxLat]],
+            { padding: 20 }
+          );
+        }
+      }));
+
+      buildLayerSelector(layerDefs.map(d => ({ id: d.mapLayerId, label: d.label })));
+    });
+
+  </script>
+</body>
+</html>

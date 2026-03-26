@@ -177,6 +177,36 @@
       line-height: 1;
     }
 
+    .card-get-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 20px;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: #6b3fa0;
+      background: #f3eeff;
+      border-left: 1.5px solid #cdb8ef;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .card-get-link:hover {
+      background: #6b3fa0;
+      color: #fff;
+    }
+
+    .card-get-link .get-icon {
+      font-size: 16pt;
+      line-height: 1;
+    }
+
     .card-accent {
       width: 6px;
       flex-shrink: 0;
@@ -219,6 +249,14 @@
 
     .card.example .card-meta {
       color: #b85c00;
+    }
+
+    .card.utility .card-accent {
+      background: #6b3fa0;
+    }
+
+    .card.utility .card-meta {
+      color: #6b3fa0;
     }
 
     .card-badge {
@@ -421,6 +459,28 @@
       </a>
     </div>
 
+
+    <div class="section-label">Utilities</div>
+    <div class="card-grid">
+
+      <!-- Utility card template — uncomment and fill in href, get-href, meta, and title.
+           Use class="card-badge pdf", "doc", or "web" to match the file type. -->
+
+      
+      <div class="card utility">
+        <a class="card-main-link" href="utils/docker-compose-files.zip" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">Docker Compose</div>
+            <div class="card-title">docker compose files & configs</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-get-link" href="utils/docker-compose-files.zip" target="_blank" rel="noopener">
+          <span class="get-icon">&#11015;</span>Get
+        </a>
+      </div>
+
     <div class="section-label">Presentations</div>
     <div class="card-grid">
       <a class="card" href="presentation/00-intro.html" target="_blank" rel="noopener">
@@ -458,8 +518,16 @@
       <a class="card" href="presentation/04-webmaps-and-dashboards.html" target="_blank" rel="noopener">
         <div class="card-accent"></div>
         <div class="card-body">
-          <div class="card-meta">Presentation 03</div>
+          <div class="card-meta">Presentation 04</div>
           <div class="card-title">Webmaps & Dashboards</div>
+        </div>
+        <div class="card-arrow">&#8594;</div>
+      </a>
+      <a class="card" href="presentation/05-cloud-native-geospatial.html" target="_blank" rel="noopener">
+        <div class="card-accent"></div>
+        <div class="card-body">
+          <div class="card-meta">Presentation 05</div>
+          <div class="card-title">Cloud-native geospatial</div>
         </div>
         <div class="card-arrow">&#8594;</div>
       </a>
@@ -621,6 +689,36 @@
         </a>
       </div>
 
+      <!-- More Maplibre examples -->
+      <div class="card example">
+        <a class="card-main-link" href="examples/webmaps/maplibre-00-loading-large-wfs-geojson.html" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">webmap</div>
+            <div class="card-title">Loading a large geoJSON via WFS (bad)</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-code-link" href="examples/code/maplibre-loading-large-wfs-geojson.zip" target="_blank" rel="noopener">
+          <span class="code-icon">&#128196;</span>Code
+        </a>
+      </div>
+
+      <!-- More Maplibre examples -->
+      <div class="card example">
+        <a class="card-main-link" href="examples/webmaps/maplibre-03-apply-filters.html" target="_blank" rel="noopener">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-meta">webmap</div>
+            <div class="card-title">Loading, Styling, and Filtering pmtiles in MapLibre</div>
+          </div>
+          <div class="card-arrow">&#8594;</div>
+        </a>
+        <a class="card-code-link" href="examples/code/maplibre-loading-styling-filtering-pmtiles.zip" target="_blank" rel="noopener">
+          <span class="code-icon">&#128196;</span>Code
+        </a>
+      </div>
+
       <!-- Sample Dashboard-type webmap examples -->
       <div class="card example">
         <a class="card-main-link" href="/examples/webmaps/sample-dashboard-type.html" target="_blank" rel="noopener">
@@ -641,7 +739,7 @@
         <a class="card-main-link" href="examples/code/sample-streamlit.zip" target="_blank" rel="noopener">
           <div class="card-accent"></div>
           <div class="card-body">
-            <div class="card-meta">streamlit</div>
+            <div class="card-meta">dashboard</div>
             <div class="card-title">Sample dashboard with streamlit</div>
           </div>
           <div class="card-arrow">&#8594;</div>
@@ -656,7 +754,7 @@
         <a class="card-main-link" href="examples/code/sample-observable-framework.zip" target="_blank" rel="noopener">
           <div class="card-accent"></div>
           <div class="card-body">
-            <div class="card-meta">streamlit</div>
+            <div class="card-meta">dashboard</div>
             <div class="card-title">Sample dashboard with Observable Framework</div>
           </div>
           <div class="card-arrow">&#8594;</div>
@@ -671,7 +769,7 @@
         <a class="card-main-link" href="examples/code/sample-evidence.zip" target="_blank" rel="noopener">
           <div class="card-accent"></div>
           <div class="card-body">
-            <div class="card-meta">streamlit</div>
+            <div class="card-meta">dashboard</div>
             <div class="card-title">Sample dashboard with Evidence</div>
           </div>
           <div class="card-arrow">&#8594;</div>

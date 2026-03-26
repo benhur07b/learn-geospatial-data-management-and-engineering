@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<!--
+  MAP 03 — ATTRIBUTE FILTERS
+  ===========================
+  Building on map_02, we now add cascading dropdown filters so the user
+  can narrow the map down to a specific region, province, or municipality.
+
+  New concepts introduced in this file:
+  ──────────────────────────────────────
+  1. MapLibre FILTERS
+     Just like a WHERE clause in SQL, a MapLibre filter tells a layer to
+     only draw features that match a condition. Example:
+       ["==", ["get", "ADM1_EN"], "REGION III"]
+     → only draw features whose ADM1_EN field equals "REGION III"
+     Multiple conditions can be combined with ["all", cond1, cond2, ...].
+     Calling map.setFilter(layerId, null) removes the filter (show all).
+
+  2. querySourceFeatures()
+     MapLibre keeps a cache of the tiles it has downloaded. We can query
+     that cache to read feature properties without a separate API call.
+     We use this to discover the unique ADM1/ADM2/ADM3 name values and
+     populate the dropdown options.
+
+  3. CASCADING DROPDOWNS
+     Selecting a region (ADM1) narrows the province list (ADM2) to only
+     provinces in that region. Selecting a province narrows the municipality
+     list (ADM3). This is done by filtering the in-memory hierarchy object.
+
+  4. HIERARCHY OBJECT
+     A nested Map structure:  ADM1 name → Map( ADM2 name → Set(ADM3 names) )
+     This lets us quickly find which ADM2s belong to a given ADM1, and
+     which ADM3s belong to a given ADM2.
+
+  Changes from map_02:
+  ────────────────────
+  + hierarchy Map — stores the ADM name tree discovered from tiles
+  + filterState object — tracks the currently selected ADM1/ADM2/ADM3
+  + discoverHierarchy() — reads loaded tiles and fills the hierarchy
+  + refreshFilterSelects() — rebuilds dropdown options from the hierarchy
+  + buildMapFilter() — turns filterState into a MapLibre filter expression
+  + applyMapFilter() — applies the filter to all layers
+  + "Filter" section in the panel with 3 selects and a Reset button
+  + map.on("idle", discoverHierarchy) — re-scans whenever new tiles load
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 3 — Attribute Filters</title>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <link  href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #map { width: 100%; height: 100%; }
+
+    #panel {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      border-radius: 6px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      font-family: sans-serif;
+      font-size: 13px;
+      z-index: 1;
+      width: 220px;
+    }
+
+    .panel-section { margin-bottom: 12px; }
+    .panel-section:last-child { margin-bottom: 0; }
+
+    .panel-section h4 {
+      margin: 0 0 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 10px 0;
+    }
+
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .layer-item:last-child { margin-bottom: 0; }
+    .layer-item label { cursor: pointer; user-select: none; }
+
+    .style-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .style-item:last-child { margin-bottom: 0; }
+    .style-item label { cursor: pointer; user-select: none; }
+
+    input[type="checkbox"],
+    input[type="radio"] { cursor: pointer; }
+
+    /* NEW: filter dropdown rows */
+    .filter-row { margin-bottom: 6px; }
+    .filter-row:last-child { margin-bottom: 0; }
+
+    .filter-row label {
+      display: block;
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 3px;
+    }
+
+    .filter-row select {
+      width: 100%;
+      font-size: 12px;
+      padding: 3px 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    /* Disabled state: shown when no parent filter is selected yet */
+    .filter-row select:disabled {
+      background: #f5f5f5;
+      color: #aaa;
+      cursor: default;
+    }
+
+    #reset-filters {
+      margin-top: 8px;
+      width: 100%;
+      font-size: 11px;
+      padding: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      color: #555;
+    }
+    #reset-filters:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div id="panel">
+    <div class="panel-section" id="layer-section">
+      <h4>Layers</h4>
+    </div>
+
+    <hr class="divider">
+
+    <div class="panel-section">
+      <h4>Categorize by</h4>
+      <div class="style-item">
+        <input type="radio" name="style" id="style-adm1" value="ADM1_PCODE" checked>
+        <label for="style-adm1">ADM1 (Region)</label>
+      </div>
+      <div class="style-item">
+        <input type="radio" name="style" id="style-adm2" value="ADM2_PCODE">
+        <label for="style-adm2">ADM2 (Province)</label>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!--
+      NEW: Filter section
+      -------------------
+      Three <select> dropdowns, one per admin level.
+      ADM2 and ADM3 start disabled — they get enabled once a parent
+      level is selected. JavaScript populates the <option> elements.
+    -->
+    <div class="panel-section">
+      <h4>Filter</h4>
+      <div class="filter-row">
+        <label for="filter-adm1">ADM1 — Region</label>
+        <select id="filter-adm1"><option value="">— All —</option></select>
+      </div>
+      <div class="filter-row">
+        <label for="filter-adm2">ADM2 — Province</label>
+        <select id="filter-adm2" disabled><option value="">— All —</option></select>
+      </div>
+      <div class="filter-row">
+        <label for="filter-adm3">ADM3 — Municipality</label>
+        <select id="filter-adm3" disabled><option value="">— All —</option></select>
+      </div>
+      <button id="reset-filters">Reset filters</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // DATA SOURCES  (unchanged)
+    // =========================================================================
+    const SOURCES = [
+      { id: "phl-adm3", url: "http://localhost:9000/psa-afcd/pmtiles/phl_adm3.pmtiles", label: "ADM3 (Municipality)" },
+      { id: "phl-adm4", url: "http://localhost:9000/psa-afcd/pmtiles/phl_adm4.pmtiles", label: "ADM4 (Barangay)" },
+    ];
+
+
+    // =========================================================================
+    // COLOR PALETTE AND EXPRESSIONS  (unchanged from map_02)
+    // =========================================================================
+    const PALETTE = [
+      "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
+      "#911eb4", "#42d4f4", "#f032e6", "#bfef45", "#fabed4",
+      "#469990", "#dcbeff", "#9a6324", "#e6beff", "#800000",
+      "#aaffc3", "#808000", "#ffd8b1", "#000075", "#a9a9a9"
+    ];
+
+    function makeCategoryColorExpr(field, sliceStart, sliceEnd) {
+      const n = PALETTE.length;
+      const moduloExpr = ["%", ["to-number", ["slice", ["get", field], sliceStart, sliceEnd]], n];
+      const args = [];
+      for (let i = 0; i < n; i++) {
+        args.push(["==", moduloExpr, i]);
+        args.push(PALETTE[i]);
+      }
+      args.push("#cccccc");
+      return ["case", ...args];
+    }
+
+    const COLOR_EXPRS = {
+      ADM1_PCODE: makeCategoryColorExpr("ADM1_PCODE", 2, 4),
+      ADM2_PCODE: makeCategoryColorExpr("ADM2_PCODE", 2, 6),
+    };
+
+
+    // =========================================================================
+    // NEW: FILTER STATE AND HIERARCHY
+    // =========================================================================
+
+    //
+    // hierarchy stores the tree of admin names discovered from loaded tiles.
+    // Structure:  Map { "REGION I" => Map { "ILOCOS NORTE" => Set { "ADAMS", ... } } }
+    // This lets us quickly look up which provinces belong to a region, and
+    // which municipalities belong to a province.
+    //
+    const hierarchy = new Map();
+
+    //
+    // filterState tracks what the user has currently selected.
+    // Empty string "" means "no filter / show all".
+    //
+    const filterState = { adm1: "", adm2: "", adm3: "" };
+
+    // Shorthand references to the three <select> elements in the HTML.
+    const sel = {
+      adm1: document.getElementById("filter-adm1"),
+      adm2: document.getElementById("filter-adm2"),
+      adm3: document.getElementById("filter-adm3"),
+    };
+
+
+    // =========================================================================
+    // PMTiles PROTOCOL + MAP INITIALISATION  (unchanged)
+    // =========================================================================
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+
+    const map = new maplibregl.Map({
+      container: "map",
+      style: {
+        version: 8,
+        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+        sources: {
+          "basemap": {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "&copy; OpenStreetMap contributors"
+          },
+          ...Object.fromEntries(
+            SOURCES.map(s => [s.id, { type: "vector", url: `pmtiles://${s.url}` }])
+          )
+        },
+        layers: [{ id: "basemap", type: "raster", source: "basemap" }]
+      },
+      center: [122, 12],
+      zoom: 5
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    let layerDefs = [];
+
+
+    // =========================================================================
+    // STYLING  (unchanged from map_02)
+    // =========================================================================
+    function applyStyle(field) {
+      const colorExpr = COLOR_EXPRS[field];
+      layerDefs.forEach(({ mapLayerId }) => {
+        if (map.getLayer(`${mapLayerId}-fill`)) {
+          map.setPaintProperty(`${mapLayerId}-fill`, "fill-color", colorExpr);
+          map.setPaintProperty(`${mapLayerId}-line`, "line-color", colorExpr);
+        }
+      });
+    }
+
+    document.querySelectorAll("input[name='style']").forEach(radio => {
+      radio.addEventListener("change", e => applyStyle(e.target.value));
+    });
+
+
+    // =========================================================================
+    // LAYER VISIBILITY TOGGLE  (unchanged)
+    // =========================================================================
+    function toggleLayer(layerId, visible) {
+      const v = visible ? "visible" : "none";
+      map.setLayoutProperty(`${layerId}-fill`, "visibility", v);
+      map.setLayoutProperty(`${layerId}-line`, "visibility", v);
+    }
+
+    function buildLayerSelector(layers) {
+      const section = document.getElementById("layer-section");
+      layers.forEach(({ id, label }) => {
+        const item = document.createElement("div");
+        item.className = "layer-item";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = `toggle-${id}`;
+        checkbox.checked = true;
+        checkbox.addEventListener("change", () => toggleLayer(id, checkbox.checked));
+        const labelEl = document.createElement("label");
+        labelEl.htmlFor = `toggle-${id}`;
+        labelEl.textContent = label;
+        item.append(checkbox, labelEl);
+        section.appendChild(item);
+      });
+    }
+
+
+    // =========================================================================
+    // NEW: FILTER DROPDOWN HELPERS
+    // =========================================================================
+
+    //
+    // populateSelect(selectEl, options, selectedValue)
+    // ------------------------------------------------
+    // Rebuilds the <option> list of a <select> element.
+    // Always adds "— All —" as the first option (empty value = no filter).
+    // Re-selects the previously chosen value if it still exists in the list.
+    // Disables the select if there are no options to choose from.
+    //
+    function populateSelect(selectEl, options, selectedValue) {
+      const current = selectedValue ?? selectEl.value;
+      selectEl.innerHTML = `<option value="">— All —</option>`;
+      options.forEach(opt => {
+        const o = document.createElement("option");
+        o.value = opt;
+        o.textContent = opt;
+        if (opt === current) o.selected = true;
+        selectEl.appendChild(o);
+      });
+      selectEl.disabled = options.length === 0;
+    }
+
+    //
+    // refreshFilterSelects()
+    // ----------------------
+    // Rebuilds all three dropdowns based on the current filterState and
+    // the hierarchy of names we've discovered from loaded tiles.
+    //
+    // Logic:
+    //   ADM1 dropdown  → always shows all discovered regions
+    //   ADM2 dropdown  → shows provinces under the selected region
+    //                    (or all provinces if no region selected)
+    //   ADM3 dropdown  → shows municipalities under selected province
+    //                    (scoped to selected region too, if any)
+    //
+    function refreshFilterSelects() {
+      // ADM1: all top-level keys in the hierarchy
+      const adm1Options = [...hierarchy.keys()].sort();
+      populateSelect(sel.adm1, adm1Options, filterState.adm1);
+
+      // ADM2: provinces under the selected region, or all provinces
+      let adm2Options = [];
+      if (filterState.adm1 && hierarchy.has(filterState.adm1)) {
+        adm2Options = [...hierarchy.get(filterState.adm1).keys()].sort();
+      } else if (!filterState.adm1) {
+        const all = new Set();
+        hierarchy.forEach(adm2Map => adm2Map.forEach((_, k) => all.add(k)));
+        adm2Options = [...all].sort();
+      }
+      populateSelect(sel.adm2, adm2Options, filterState.adm2);
+
+      // ADM3: municipalities under the selected province (and region if set)
+      let adm3Options = [];
+      if (filterState.adm2) {
+        // Build a combined adm2Map: if a region is selected use its map,
+        // otherwise merge all adm2 maps across all regions.
+        const adm2Map = filterState.adm1
+          ? hierarchy.get(filterState.adm1)
+          : (() => {
+              const m = new Map();
+              hierarchy.forEach(a2 => a2.forEach((v, k) => {
+                if (!m.has(k)) m.set(k, new Set());
+                v.forEach(x => m.get(k).add(x));
+              }));
+              return m;
+            })();
+        if (adm2Map?.has(filterState.adm2)) {
+          adm3Options = [...adm2Map.get(filterState.adm2)].sort();
+        }
+      } else if (filterState.adm1 && hierarchy.has(filterState.adm1)) {
+        const all = new Set();
+        hierarchy.get(filterState.adm1).forEach(set => set.forEach(v => all.add(v)));
+        adm3Options = [...all].sort();
+      } else if (!filterState.adm1) {
+        const all = new Set();
+        hierarchy.forEach(adm2Map => adm2Map.forEach(set => set.forEach(v => all.add(v))));
+        adm3Options = [...all].sort();
+      }
+      populateSelect(sel.adm3, adm3Options, filterState.adm3);
+    }
+
+
+    // =========================================================================
+    // NEW: BUILD AND APPLY THE MAP FILTER
+    // =========================================================================
+
+    //
+    // buildMapFilter()
+    // ----------------
+    // Converts filterState into a MapLibre filter expression.
+    //
+    // Each active selection becomes an equality condition:
+    //   ["==", ["get", "ADM1_EN"], "REGION I"]
+    //
+    // If multiple levels are selected, they are combined with "all":
+    //   ["all",
+    //     ["==", ["get", "ADM1_EN"], "REGION I"],
+    //     ["==", ["get", "ADM2_EN"], "ILOCOS NORTE"]
+    //   ]
+    //
+    // Returns null if nothing is selected — null removes the filter entirely.
+    //
+    function buildMapFilter() {
+      const conditions = [];
+      if (filterState.adm1) conditions.push(["==", ["get", "ADM1_EN"], filterState.adm1]);
+      if (filterState.adm2) conditions.push(["==", ["get", "ADM2_EN"], filterState.adm2]);
+      if (filterState.adm3) conditions.push(["==", ["get", "ADM3_EN"], filterState.adm3]);
+      return conditions.length > 0 ? ["all", ...conditions] : null;
+    }
+
+    //
+    // applyMapFilter()
+    // ----------------
+    // Calls map.setFilter() on every fill and line layer.
+    // setFilter() replaces the current filter for that layer immediately —
+    // MapLibre re-evaluates which features to draw on the next render frame.
+    //
+    function applyMapFilter() {
+      const filter = buildMapFilter();
+      layerDefs.forEach(({ mapLayerId }) => {
+        if (map.getLayer(`${mapLayerId}-fill`)) {
+          map.setFilter(`${mapLayerId}-fill`, filter);
+          map.setFilter(`${mapLayerId}-line`, filter);
+        }
+      });
+    }
+
+
+    // =========================================================================
+    // NEW: DROPDOWN EVENT LISTENERS
+    // =========================================================================
+
+    // When ADM1 changes: store new value, clear ADM2 and ADM3, refresh, filter.
+    sel.adm1.addEventListener("change", () => {
+      filterState.adm1 = sel.adm1.value;
+      filterState.adm2 = "";
+      filterState.adm3 = "";
+      refreshFilterSelects();
+      applyMapFilter();
+    });
+
+    // When ADM2 changes: store new value, clear ADM3, refresh, filter.
+    sel.adm2.addEventListener("change", () => {
+      filterState.adm2 = sel.adm2.value;
+      filterState.adm3 = "";
+      refreshFilterSelects();
+      applyMapFilter();
+    });
+
+    // When ADM3 changes: store new value and filter (no children to clear).
+    sel.adm3.addEventListener("change", () => {
+      filterState.adm3 = sel.adm3.value;
+      applyMapFilter();
+    });
+
+    // Reset button: clear all selections and remove all filters.
+    document.getElementById("reset-filters").addEventListener("click", () => {
+      filterState.adm1 = "";
+      filterState.adm2 = "";
+      filterState.adm3 = "";
+      refreshFilterSelects();
+      applyMapFilter();
+    });
+
+
+    // =========================================================================
+    // NEW: DISCOVER HIERARCHY FROM LOADED TILES
+    // =========================================================================
+
+    //
+    // discoverHierarchy()
+    // -------------------
+    // querySourceFeatures() returns all features currently in the tile cache
+    // for a given source and source-layer. We scan their properties to build
+    // up the hierarchy of admin names.
+    //
+    // We call this on every "idle" event so that as the user pans/zooms and
+    // new tiles are loaded, any newly visible names are added to the dropdowns.
+    //
+    // "changed" tracks whether we found anything new — if nothing changed,
+    // we skip the (slightly expensive) dropdown rebuild.
+    //
+    function discoverHierarchy() {
+      // We query the ADM3 layer because it has ADM1, ADM2, and ADM3 name
+      // fields on every feature, making it the best source for the hierarchy.
+      const adm3Def = layerDefs.find(d => d.source === "phl-adm3");
+      if (!adm3Def) return;
+
+      const features = map.querySourceFeatures(adm3Def.source, {
+        sourceLayer: adm3Def.sourceLayer
+      });
+
+      let changed = false;
+
+      features.forEach(f => {
+        const { ADM1_EN: a1, ADM2_EN: a2, ADM3_EN: a3 } = f.properties;
+        if (!a1) return;   // skip features with no name (shouldn't happen)
+
+        // Ensure ADM1 exists in the top-level map
+        if (!hierarchy.has(a1)) {
+          hierarchy.set(a1, new Map());
+          changed = true;
+        }
+        const adm2Map = hierarchy.get(a1);
+
+        // Ensure ADM2 exists under ADM1
+        if (!adm2Map.has(a2)) {
+          adm2Map.set(a2, new Set());
+          changed = true;
+        }
+        const adm3Set = adm2Map.get(a2);
+
+        // Ensure ADM3 exists under ADM2
+        if (a3 && !adm3Set.has(a3)) {
+          adm3Set.add(a3);
+          changed = true;
+        }
+      });
+
+      // Only rebuild the UI if we actually found new names.
+      if (changed) refreshFilterSelects();
+    }
+
+    // Run discoverHierarchy every time the map finishes loading tiles.
+    map.on("idle", discoverHierarchy);
+
+
+    // =========================================================================
+    // MAP LOAD — ADD VECTOR LAYERS  (same as map_02)
+    // =========================================================================
+    map.on("load", async () => {
+      const initialColorExpr = COLOR_EXPRS["ADM1_PCODE"];
+
+      await Promise.all(SOURCES.map(async (src) => {
+        const p = new pmtiles.PMTiles(src.url);
+        const [header, metadata] = await Promise.all([p.getHeader(), p.getMetadata()]);
+
+        const sourceLayer = (metadata?.vector_layers ?? [])[0]?.id
+                            ?? src.id.replace("phl-", "phl_");
+        const mapLayerId  = sourceLayer;
+        layerDefs.push({ mapLayerId, source: src.id, sourceLayer, label: src.label });
+
+        map.addLayer({
+          id:             `${mapLayerId}-fill`,
+          type:           "fill",
+          source:         src.id,
+          "source-layer": sourceLayer,
+          paint: { "fill-color": initialColorExpr, "fill-opacity": 0.4 }
+        });
+
+        map.addLayer({
+          id:             `${mapLayerId}-line`,
+          type:           "line",
+          source:         src.id,
+          "source-layer": sourceLayer,
+          paint: { "line-color": initialColorExpr, "line-width": 0.8 }
+        });
+
+        if (src.id === "phl-adm3" && header.minLon !== undefined) {
+          map.fitBounds(
+            [[header.minLon, header.minLat], [header.maxLon, header.maxLat]],
+            { padding: 20 }
+          );
+        }
+      }));
+
+      buildLayerSelector(layerDefs.map(d => ({ id: d.mapLayerId, label: d.label })));
+    });
+
+  </script>
+</body>
+</html>

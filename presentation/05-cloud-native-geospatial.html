@@ -1,0 +1,2227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud-native geospatial | Learn Geospatial Data Management &amp; Engineering w/ BNHR</title>
+
+  <!-- Reveal.js (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/white.css">
+
+  <!-- Syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
+
+  <!-- CopyCode plugin -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-copycode/plugin/copycode/copycode.css">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Roboto+Mono:wght@400;500;600;700&family=Roboto+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+/* ===============================================================
+   bnhr Reveal.js Theme — BNHR
+   ===============================================================
+   Targets reveal.js selectors (.reveal .slides section).
+   Uses pt for font sizes (PowerPoint convention).
+   Loaded via <link> or embedded in template <style>.
+   =============================================================== */
+
+/* =========================
+   CSS VARIABLES
+   ========================= */
+:root {
+  /* Brand Colors */
+  --bnhr-main-dark: #0c2340;
+  --bnhr-accent-blue: #3791e0;
+  --bnhr-accent-green: #589632;
+  --bnhr-accent-orange: #ffa500;
+  --bnhr-accent-purple: #4d6bfe;
+  --bnhr-accent-blue-pale: #EBF6FF;
+  --bnhr-main-white: #f5f5f5;
+  --bnhr-red: #CC0000;
+  --bnhr-gray: #888888;
+
+  /* Extended palette (charts, diagrams) */
+  --bnhr-purple: #6B4C9A;
+  --bnhr-cyan: #2EC4B6;
+  --bnhr-gold: #D4A843;
+
+  /* Typography */
+  --font-title: 'Albert Sans', 'Courier New', monospace;
+  --font-title-narrow: 'Albert Sans', Arial, sans-serif;
+  --font-body: 'Atkinson Hyperlegible Next', Arial, sans-serif;
+  --font-code: 'Roboto Mono', monospace;
+
+  /* Font sizes (pt) — designed for 1920×1080 reveal.js canvas */
+  --fs-title-display: 128pt;
+  --fs-title-section: 120pt;
+  --fs-title-subsection: 72pt;
+  --fs-title-slide: 72pt;
+  --fs-subtitle: 48pt;
+  --fs-body: 28pt;
+  --fs-body-small: 22pt;
+  --fs-footer: 14pt;
+  --fs-code: 22pt;
+
+  /* Spacing — asymmetric: more right padding for breathing room */
+  --slide-padding: 72px 160px 72px 96px;
+  /* --slide-padding: 24px 24px 24px 24px; */
+}
+
+/* =========================
+   SLIDE BACKGROUNDS
+   ========================= */
+/* reveal.js mirrors section classes onto .slide-background elements,
+   so we can target them directly to control background color. */
+.reveal .slide-background .slide-background-content {
+  background-color: var(--bnhr-main-white);
+}
+
+.reveal .slide-background.title-slide .slide-background-content,
+.reveal .slide-background.section-slide .slide-background-content,
+.reveal .slide-background.subsection-slide .slide-background-content {
+  background-color: var(--bnhr-main-dark);
+}
+
+/* =========================
+   BASE / RESET
+   ========================= */
+.reveal {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  color: var(--bnhr-main-dark);
+}
+
+/* display: flex is set via Reveal config (display: 'flex').
+   center: false prevents reveal.js from injecting inline top offsets.
+   Sections size to content by default — do NOT set height: 100% here
+   as it triggers reveal.js's overflow stacking algorithm on content
+   slides. Dark slide types (title, section, subsection) override with
+   height: 100% individually since they have simple layouts that need
+   full-viewport vertical positioning (margin-top: auto, justify-content).
+   top: 0 anchors slides to the top — without it, position: absolute
+   with top: auto places sections at their "static position", which
+   shifts down based on preceding siblings in the DOM. */
+.reveal .slides section {
+  text-align: left;
+  padding: var(--slide-padding);
+  box-sizing: border-box;
+  flex-direction: column;
+  top: 0;
+  /* height: 100%; */
+}
+
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--font-title);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  color: inherit;
+}
+
+/* =========================
+   TITLE SLIDE
+   ========================= */
+.reveal .slides section.title-slide {
+  background: var(--bnhr-main-dark);
+  color: var(--bnhr-main-white);
+  padding: 72px 96px 144px 96px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.reveal .slides section.title-slide .url {
+  font-family: var(--font-body);
+  font-size: var(--fs-body-small);
+  color: var(--bnhr-main-white);
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.reveal .slides section.title-slide .title-logo,
+.reveal .slides section.section-slide .title-logo,
+.reveal .slides section.subsection-slide .title-logo {
+  position: absolute;
+  top: 48px;
+  right: 64px;
+  width: 144px;
+  height: auto;
+}
+
+.reveal .slides section.title-slide .project-context {
+  font-size: var(--fs-body);
+  font-weight: 300;
+  opacity: 0.7;
+  text-transform: lowercase;
+}
+
+.reveal .slides section.title-slide h1 {
+  font-size: var(--fs-title-display);
+  font-weight: 700;
+  color: var(--bnhr-main-white) !important;
+  margin: 24px 0 32px 0;
+  line-height: 1.35;
+  max-width: 80%;
+  letter-spacing: -0.6rem;
+  text-transform: lowercase;
+  word-spacing: 0rem;
+  line-height: 0.83;
+}
+
+.reveal .slides section.title-slide .subtitle {
+  font-size: var(--fs-subtitle);
+  font-weight: 300;
+  color: var(--bnhr-main-white);
+  opacity: 0.75;
+  margin: 0;
+  text-transform: lowercase;
+}
+
+/* =========================
+   CONTENTS / TOC
+   ========================= */
+.reveal .slides section.toc-slide {
+  background: var(--bnhr-main-white);
+}
+
+.reveal .slides section.toc-slide h2 {
+  font-size: var(--fs-title-slide);
+  color: var(--bnhr-main-dark);
+  margin: 0 0 36px 0;
+}
+
+.reveal .slides section.toc-slide .toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: toc-item;
+}
+
+.reveal .slides section.toc-slide .toc-list li {
+  counter-increment: toc-item;
+  font-size: var(--fs-body);
+  margin-bottom: 20px;
+  padding-left: 2.2em;
+}
+
+.reveal .slides section.toc-slide .toc-list li::before {
+  content: counter(toc-item, upper-roman) ".";
+  color: var(--bnhr-accent-blue);
+  font-weight: 600;
+  min-width: 40px;
+  display: inline-block;
+  position: absolute;
+  left: 0;
+}
+
+/* =========================
+   SECTION DIVIDER
+   ========================= */
+.reveal .slides section.section-slide {
+  background: var(--bnhr-main-dark);
+  color: var(--bnhr-main-white);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 96px;
+  height: 100%;
+  padding: 72px 96px 144px 96px;
+}
+
+.reveal .slides section.section-slide h1 {
+  font-size: var(--fs-title-section);
+  color: var(--bnhr-main-white);
+  margin: 0;
+  line-height: 1.35;
+  max-width: 80%;
+  letter-spacing: -0.6rem;
+  text-transform: lowercase;
+  word-spacing: 0rem;
+  line-height: 0.83;
+}
+
+.reveal .slides section.section-slide .section-label {
+  font-family: var(--font-body);
+  font-size: var(--fs-body-small);
+  color: var(--bnhr-accent-blue);
+  margin-bottom: 12px;
+  display: block;
+  font-weight: 400;
+  text-transform: lowercase;
+}
+
+/* =========================
+   SUB-SECTION DIVIDER
+   ========================= */
+.reveal .slides section.subsection-slide {
+  background: var(--bnhr-main-dark);
+  color: var(--bnhr-main-white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 96px;
+  height: 100%;
+  padding: 72px 96px 144px 96px;
+}
+
+.reveal .slides section.subsection-slide .section-label {
+  font-family: var(--font-body);
+  font-size: var(--fs-body-small);
+  color: var(--bnhr-main-white);
+  /* opacity: 0.7; */
+  margin-bottom: 16px;
+  display: block;
+  text-transform: lowercase;
+}
+
+.reveal .slides section.subsection-slide h1 {
+  font-family: var(--font-title-narrow);
+  font-size: var(--fs-title-subsection);
+  font-weight: 700;
+  color: var(--bnhr-accent-blue);
+  margin: 0;
+  line-height: 1.35;
+  max-width: 80%;
+  letter-spacing: -0.3rem;
+  text-transform: lowercase;
+  word-spacing: 0rem;
+  line-height: 0.83;
+}
+
+/* =========================
+   CONTENT SLIDE
+   ========================= */
+.reveal .slides section.content-slide {
+  background: var(--bnhr-main-white);
+  color: var(--bnhr-main-dark);
+}
+
+.reveal .slides section.content-slide h2 {
+  font-size: var(--fs-title-slide);
+  margin: 0 0 36px 0;
+  padding-bottom: 32px;
+  border-bottom: 3px solid var(--bnhr-accent-orange);
+  display: flex;
+  /* align-items: center;
+  gap: 16px;
+  margin-right: 96px; */
+  letter-spacing: -0.3rem;
+  text-transform: lowercase;
+  word-spacing: 0rem;
+  line-height: 0.83;
+}
+
+
+.reveal .slides section.content-slide .content {
+  flex: 1;
+}
+
+/* =========================
+   PARAGRAPH SPACING
+   ========================= */
+.reveal .slides section p {
+  margin: 0 0 24px 0;
+}
+
+.reveal .slides section p + ul,
+.reveal .slides section p + ol {
+  margin-top: 10px;
+}
+
+.reveal .slides section ul + p,
+.reveal .slides section ol + p {
+  margin-top: 28px;
+}
+
+/* =========================
+   TWO-COLUMN LAYOUT
+   ========================= */
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  flex: 1;
+}
+
+.column-header {
+  background: var(--bnhr-main-dark);
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: var(--fs-body);
+  margin-bottom: 20px;
+  color: var(--bnhr-main-white);
+}
+
+/* Uneven splits */
+.two-column.split-2-1 {
+  grid-template-columns: 2fr 1fr;
+}
+
+.two-column.split-1-2 {
+  grid-template-columns: 1fr 2fr;
+}
+
+/* =========================
+   DATA / CHART SLIDE
+   ========================= */
+.reveal .slides section.data-slide {
+  /* position: relative removed — the base section rule's position: absolute
+     already serves as a containing block for the ::before triangle accent.
+     Explicitly setting relative here fought with reveal.js's slide positioning
+     and caused data slides to stack in normal flow instead of overlapping. */
+}
+
+/* Navy triangle accent — top-right corner */
+.reveal .slides section.data-slide::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 120px 120px 0;
+  border-color: transparent var(--bnhr-main-dark) transparent transparent;
+  z-index: 0;
+}
+
+.data-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 40px;
+  flex: 1;
+  align-items: center;
+}
+
+.data-narrative {
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+/* =========================
+   LISTS
+   ========================= */
+.reveal .slides section ul,
+.reveal .slides section ol {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reveal .slides section ul li,
+.reveal .slides section ol li {
+  margin-bottom: 0.5em;
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  position: relative;
+  padding-left: 1.6em;
+}
+
+.reveal .slides section ul li::before {
+  content: ">";
+  color: var(--bnhr-accent-blue);
+  font-family: var(--font-title);
+  font-weight: 600;
+  position: absolute;
+  left: 0;
+}
+
+/* Arrow variant */
+.reveal .slides section ul.arrow-list li::before {
+  content: "\2192";
+}
+
+.reveal .slides section ol {
+  counter-reset: item;
+}
+
+.reveal .slides section ol li::before {
+  counter-increment: item;
+  content: counter(item) ".";
+  color: var(--bnhr-accent-blue);
+  font-family: var(--font-title);
+  font-weight: 600;
+  position: absolute;
+  left: 0;
+}
+
+/* =========================
+   TABLES
+   ========================= */
+.reveal .slides section table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body-small);
+  margin: 28px 0 48px 0;
+}
+
+.reveal .slides section th {
+  background: var(--bnhr-main-dark);
+  color: var(--bnhr-main-white);
+  padding: 20px 20px;
+  text-align: left;
+  font-weight: 600;
+  font-family: var(--font-body);
+}
+
+.reveal .slides section td {
+  padding: 20px 20px;
+  border-bottom: 1px solid var(--bnhr-accent-blue);
+}
+
+/* Alternate rows so the LAST body row is always blue-pale.
+   Scoped to tbody tr so the thead row is unaffected.
+   nth-last-child counts from the bottom: last = 1 (odd → blue). */
+.reveal .slides section tbody tr:nth-last-child(odd) td {
+  background: var(--bnhr-accent-blue-pale);
+}
+.reveal .slides section tbody tr:nth-last-child(even) td {
+  background: transparent;
+}
+
+/* Compact table variant — tighter row padding for dense tables */
+.reveal .slides section .compact td,
+.reveal .slides section .compact th {
+  padding: 10px 20px;
+}
+
+/* =========================
+   CALLOUTS & BOXES
+   ========================= */
+.callout {
+  background: var(--bnhr-accent-blue-pale);
+  border-left: 4px solid var(--bnhr-accent-blue);
+  padding: 20px;
+  margin: 20px 0;
+  font-size: var(--fs-body);
+}
+
+.alert {
+  background: #FFF0F0;
+  border-left: 4px solid var(--bnhr-red);
+  padding: 20px;
+  margin: 20px 0;
+  font-size: var(--fs-body);
+}
+
+/* =========================
+   CODE
+   ========================= */
+.reveal .slides section code {
+  font-family: var(--font-code);
+  font-size: var(--fs-code);
+  background: var(--bnhr-accent-blue-pale);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.reveal .slides section pre {
+  background: var(--bnhr-main-dark);
+  padding: 24px;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.reveal .slides section pre code {
+  background: transparent;
+  color: var(--bnhr-main-white);
+  padding: 0;
+  font-size: var(--fs-code);
+  line-height: 1.5;
+}
+
+/* =========================
+   SCREENSHOT CONTAINER
+   ========================= */
+.screenshot-container {
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--bnhr-accent-blue);
+  max-width: 85%;
+  margin: 16px auto;
+}
+
+.screenshot-container img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Dark screenshot variant (for dark UI captures) */
+.screenshot-container.dark {
+  border-color: var(--bnhr-main-dark);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* Screenshot with caption */
+.screenshot-caption {
+  font-size: var(--fs-body-small);
+  color: var(--bnhr-gray);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* =========================
+   ANNOTATION OVERLAYS
+   ========================= */
+.annotated {
+  position: relative;
+  display: inline-block;
+}
+
+.annotation-circle {
+  position: absolute;
+  border: 3px solid var(--bnhr-red);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.annotation-arrow {
+  position: absolute;
+  color: var(--bnhr-red);
+  font-size: 24pt;
+  pointer-events: none;
+}
+
+/* =========================
+   DIAGRAM ELEMENTS
+   ========================= */
+.entity-card {
+  border: 2px solid var(--bnhr-accent-blue);
+  border-radius: 4px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.entity-card .entity-header {
+  background: var(--bnhr-accent-blue);
+  color: var(--bnhr-main-white);
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: var(--fs-body-small);
+}
+
+.entity-card .entity-body {
+  padding: 10px 14px;
+  font-size: var(--fs-body-small);
+}
+
+/* =========================
+   GLOBAL FOOTER
+   ========================= */
+/* Lives outside .slides, inside .reveal — always pinned to bottom.
+   Reveal.js scales .slides via transform but the global footer sits
+   in the same scaled coordinate space when placed inside .reveal. */
+.global-footer {
+  position: absolute;
+  bottom: 40px;
+  left: 56px;
+  right: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.global-footer .url {
+  font-family: var(--font-body);
+  font-size: var(--fs-footer);
+  color: var(--bnhr-main-dark);
+}
+
+.global-footer .url-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--fs-footer);
+  color: var(--bnhr-gray);
+}
+
+.global-footer .page-number {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: var(--fs-footer);
+  color: var(--bnhr-gray);
+  pointer-events: none;
+}
+
+.global-footer .footer-logo {
+  width: 48px;
+  height: auto;
+}
+
+/* Hide global footer on dark-background slides (title, section, subsection) */
+.global-footer.hidden {
+  opacity: 0;
+}
+
+/* =========================
+   PER-SLIDE SOURCE OVERLAY
+   ========================= */
+/* Optional element inside a section for slide-specific metadata
+   (e.g., "Source: EITI Reports 2023"). Sits at the bottom of the
+   slide content, just above the global footer. Most slides omit this. */
+.slide-source {
+  font-family: var(--font-body);
+  font-size: var(--fs-footer);
+  color: var(--bnhr-gray);
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+/* =========================
+   FRAGMENTS (reveal.js)
+   ========================= */
+.reveal .slides section .fragment.highlight-blue.visible {
+  color: var(--bnhr-accent-blue);
+}
+
+/* =========================
+   PRINT / PDF
+   ========================= */
+@media print {
+  .reveal .slides section {
+    page-break-inside: avoid;
+  }
+  .screenshot-container {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+    <section data-markdown data-separator="\n---\n" data-separator-notes="^Note:">
+      <textarea data-template>
+<!-- .slide: class="title-slide" data-background-color="#091A31" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+<!-- <p class="project-context">PSA AFCD OPEN GEOSPATIAL STACK TRAINING</p> -->
+
+<h1>cloud-native <br><span style="color: var(--bnhr-accent-green);">geospatial</span></h1>
+
+<!-- <p class="subtitle">Day 4 Morning — Building Web Applications on the Open Stack</p> -->
+<p class="url">bnhr.xyz</p>
+---
+
+<!-- .slide: class="toc-slide" -->
+## Contents
+
+
+---
+
+## Retrieval practice
+
+*Without looking at your notes:*
+
+What URL does MapLibre use to request a tile from GeoServer?
+
+What happens to your GeoServer container when 500 users request tiles simultaneously?
+
+Note:
+No slides. Prompt on the board. 2 min individual write, cold-call 3–4 participants. Expected answers: the WMS GetMap URL with {bbox-epsg-3857} substitution; the GeoServer container becomes a bottleneck — every tile request hits the server, renders it, consumes CPU and memory. Transition: "That bottleneck is the problem cloud native formats solve. This morning we look at formats that let the data serve itself — no server required for tile delivery."
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+
+# Cloud Native<br>Geospatial
+
+---
+
+## HTTP range requests — the one design principle all cloud native formats share
+
+- A client requests **specific bytes** of a file over HTTP — not the whole file
+- The file sits on any static file server: S3, CDN, or a basic nginx container
+- No database process needed; spatial indexing is **embedded in the file itself**
+- Any number of concurrent readers — zero per-request server overhead
+
+Contrast with this week: PostGIS needs a running PostgreSQL process. GeoServer needs a running Java process. Cloud native formats eliminate those requirements for **the read path**.
+
+Note:
+The key concept is HTTP 206 Partial Content. A client sends "I want bytes 10,000–20,000 of this 500 MB file" — the server returns just those bytes. Because the file format encodes its own spatial index in the header, those bytes correspond to a specific geographic region. No rendering process. No database query. The file serves itself.
+
+---
+
+## Cloud native formats add a distribution layer — they don't replace the stack
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">Traditional stack (Days 1–4)</div>
+
+**PostGIS** — live operational data, concurrent writes
+
+**GeoServer** — OGC WMS/WFS for GIS clients
+
+**GeoNode** — organizational catalog and governance
+
+</div>
+<div class="column">
+<div class="column-header">Cloud native layer (Day 5)</div>
+
+**COG** — large static rasters, partner distribution
+
+**GeoParquet** — analytical exports, remote queries
+
+**PMTiles** — stable vectors, high-traffic web maps
+
+**STAC** — machine-readable asset discovery
+
+</div>
+</div>
+
+Note:
+Repeat this message throughout the morning: PostGIS is not replaced. GeoServer is not replaced. GeoNode is not replaced. Cloud native is the distribution layer you put in front of the stack when GeoServer becomes the bottleneck, or when partners need data without a server connection.
+
+---
+
+<!-- .slide: class="subsection-slide" data-background-color="#0c2340" -->
+<span class="section-label">Cloud Native Geospatial</span>
+# S3-Compatible<br>Storage
+
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+
+---
+
+## Cloud native formats live on any HTTP server that supports range requests
+
+Cloud-native formats — COG, GeoParquet, PMTiles — can live natively in S3-compatible object storage.
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">Proprietary + Services</div>
+
+AWS S3 · GCP Cloud Storage · Azure Blob Storage
+
+All support HTTP range requests natively
+
+Scales globally without infrastructure management
+
+</div>
+<div class="column">
+<div class="column-header">Open-source + Self-hosted</div>
+
+**MinIO** — open source, high-performance object storage system
+
+Compatible with Amazon S3
+
+Same `boto3`, `s3fs`, GDAL `/vsis3/` commands
+
+Point to `your own server` instead of `amazonaws.com`
+
+</div>
+</div>
+
+Note:
+MinIO is already in the training Docker stack. The commands participants learn today — s3fs, boto3, mc cp — are identical to what they would use on AWS S3. Migration to production is a one-line configuration change.
+
+---
+
+<!-- .slide: class="subsection-slide" data-background-color="#0c2340" -->
+<span class="section-label">Cloud Native Geospatial</span>
+# COG —<br>Cloud Native<br>Raster
+
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+
+---
+
+## A COG lets a client read only the bytes covering the area it needs
+
+- **Internal tiles** are spatially ordered — adjacent pixels are stored near each other in the file
+- **Overviews** (lower-resolution versions) are embedded and seekable — zoom out loads overview tiles, not full resolution
+- The **file header** describes the entire spatial layout — a client reads the header first, then requests only the bytes for the area of interest
+
+```bash
+# Create a COG from a regular GeoTIFF
+rio cogeo create input.tif output_cog.tif
+```
+
+Note:
+A regular GeoTIFF stores data row by row — reading a small spatial area may require downloading large contiguous blocks. COG reorders storage so spatial proximity maps to byte proximity. GDAL's /vsicurl/ driver reads the COG header over HTTP, computes byte offsets for the requested window, and issues range requests for only those bytes.
+
+---
+
+## COG replaces GeoServer WCS for large static rasters shared with partners
+
+PSA use case: a **provincial palay yield raster** for the Philippines. As a regular GeoTIFF — every analyst downloads the full 2 GB file. As a COG on S3 — QGIS or rasterio requests only the bytes covering the region the analyst zoomed to.
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoServer WCS</div>
+
+Server renders a crop for every request
+
+Scales with server capacity — bottleneck at load
+
+Right for: live data that changes frequently
+
+</div>
+<div class="column">
+<div class="column-header">COG on S3</div>
+
+File serves itself from object storage
+
+Scales with S3 — zero server overhead
+
+Right for: large, mostly-static rasters shared broadly
+
+</div>
+</div>
+
+Note:
+GeoServer WCS is right when the raster is frequently updated and partners need the latest version immediately. COG is right when the raster is stable and the cost of maintaining a WCS endpoint isn't justified by update frequency.
+
+---
+
+<!-- .slide: class="subsection-slide" data-background-color="#0c2340" -->
+<span class="section-label">Cloud Native Geospatial</span>
+# geoparquet —<br>cloud-native<br>vector
+
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+
+---
+
+## A GeoParquet file on S3 is both the analytical format and the open data API
+
+From Day 1: GeoParquet is the DuckDB/analytical tier format — column pruning, bounding box pushdown, no server required.
+
+Day 5 adds the cloud dimension: **the same queries work remotely**.
+
+```python
+import duckdb
+# Query a GeoParquet file directly from S3 — no PostGIS connection needed
+duckdb.execute("""
+    SELECT province, COUNT(*) AS farm_count
+    FROM 'http://localhost:9000/psa-data/palay_distribution.parquet'
+    GROUP BY province
+    ORDER BY farm_count DESC
+""")
+```
+
+Note:
+PSA use case: publish palay_distribution as GeoParquet on a public S3 bucket. Partner agencies query it directly with DuckDB — no PostGIS connection, no GeoServer endpoint, no GeoNode login. The three-tier hierarchy from Day 1 (PostGIS → DuckDB/GeoParquet → Sedona) now has a cloud distribution channel: GeoParquet on S3 is both the analytical format and the open data distribution format. The file is the API. Partners with DuckDB installed can query it as if it were local.
+
+---
+
+<!-- .slide: class="subsection-slide" data-background-color="#0c2340" -->
+<span class="section-label">Cloud Native Geospatial</span>
+# PMTiles —<br>Vector Tiles in<br>a Single File
+
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+
+---
+
+## PMTiles delivers vector tiles from a static file — no tile server needed
+
+- A single-file archive of vector tiles using the same MVT format GeoServer produces
+- **Spatial index in the file header** — a client requests only the tile bytes it needs
+- MapLibre or Leaflet reads tiles directly from S3 over HTTP range requests
+
+The tile format is **identical** to GeoServer's vector tile extension output. The difference is delivery: GeoServer renders tiles dynamically from PostGIS; PMTiles delivers pre-generated tiles from a static file.
+
+```
+PostGIS → GeoJSON (ogr2ogr) → PMTiles (tippecanoe) → S3 (MinIO)
+```
+
+Note:
+Emphasize: same MVT format, different delivery path. Participants who understand WMS/WFS from Day 2 can think of PMTiles as "the same tiles, but pre-generated and stored in a file instead of rendered on demand." The pmtiles.js library handles the HTTP range request protocol transparently in the browser.
+
+---
+
+## PMTiles replaces GeoServer for stable, high-traffic reference layers
+
+PSA use case: the `seaweed_farms` layer on the Regional Agricultural Dashboard. Each pan and zoom sends a WMS request to GeoServer. At 500 concurrent users, GeoServer becomes the bottleneck.
+
+With PMTiles on S3 — MapLibre requests tiles from MinIO. GeoServer load drops to zero for this layer.
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoServer WMS</div>
+
+Right for: live operational data that changes frequently
+
+Pre-generation not feasible
+
+</div>
+<div class="column">
+<div class="column-header">PMTiles on S3</div>
+
+Right for: stable reference layers, high-traffic serving
+
+Pre-generation feasible — regenerate per quarterly release
+
+</div>
+</div>
+
+Note:
+The key question participants need to ask: how often does this data change? PMTiles requires regenerating the file when data changes. For seaweed_farms updated quarterly, that's fine. For a live GPS tracking layer, it's not. This trade-off comes back in the think-pair-share during Step 2 of the workshop.
+
+---
+
+<!-- .slide: class="subsection-slide" data-background-color="#0c2340" -->
+<span class="section-label">Cloud Native Geospatial</span>
+# STAC —<br>Catalog for<br>Cloud Native Assets
+
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+
+---
+
+## STAC and GeoNode are both catalog layers — for different audiences
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoNode (Day 3)</div>
+
+Full portal — upload, metadata editing, permissions, WMS previews
+
+Designed for **human interaction** and organizational governance
+
+A data manager uploads a layer and configures who can see it
+
+</div>
+<div class="column">
+<div class="column-header">STAC</div>
+
+JSON-based API spec — each item describes one asset with its spatial extent, temporal coverage, and asset URLs
+
+Designed for **programmatic search** by other systems and pipelines
+
+A partner agency's script queries new datasets automatically every night
+
+</div>
+</div>
+
+Note:
+Both catalogs coexist: GeoNode manages the PostGIS-backed layers internally; STAC indexes the COG/GeoParquet exports as the distribution interface. They serve different consumers. GeoNode is the governance layer; STAC is the machine-readable window onto the cloud native exports.
+
+---
+
+## STAC enables automated partner pipelines that need no human in the loop
+
+PSA use case: a STAC catalog of all cloud native exports (COG rasters, GeoParquet vectors) derived from PSA AFCD data. A partner agency's pipeline can:
+
+1. Query the STAC API for crop datasets updated after a given date
+2. Download only what changed since the last run
+3. Load it directly into their analytical environment — **no GeoNode login, no human contact**
+
+Note:
+Show this STAC item JSON in the browser during Demo 3 alongside a GeoNode resource page. Same metadata fields — different interface. STAC is machine-readable first. GeoNode is human-oriented first.
+
+---
+
+## Cloud native helps where the stack has a bottleneck or a boundary
+
+<div class="compact">
+
+| Question | Traditional stack | Cloud native layer |
+|---|---|---|
+| Live operational data, concurrent writes? | **PostGIS** | — |
+| OGC WMS/WFS for GIS clients? | **GeoServer** | — |
+| Organizational catalog and governance? | **GeoNode** | — |
+| Large static raster — partner distribution? | GeoServer WCS | **COG on S3** |
+| Stable vector layer — high-traffic web map? | GeoServer WMS | **PMTiles on S3** |
+| Analytical export — partner queries? | GeoPackage emailed | **GeoParquet on S3** |
+| Machine-readable asset discovery? | GeoNode API | **STAC** |
+
+</div>
+
+*"Everything we built this week is still running. Cloud native is what you put in front of it when GeoServer becomes the bottleneck, or when partners need data without a server connection."*
+
+Note:
+Return to this table during the demo and workshop. It is the synthesis of the entire lecture. Every cloud native format decision maps to one row. Participants should be able to point to a row of this table to justify every format choice they make in Step 4 of the workshop.
+
+---
+
+## Traffic light check-in
+
+<div class="two-column split-2-1">
+<div>
+
+1. I understand how HTTP range requests work and why they matter for COG and PMTiles
+2. I can name one PSA AFCD dataset that would benefit from a cloud native format and explain which format fits it.
+3. I understand when NOT to use a cloud native format.
+4. I understand that cloud native formats are a distribution layer on top of the existing stack and not meant to fully replace PostGIS, GeoServer, or GeoNode.
+5. I understand the difference between STAC and GeoNode and when I would use each.
+6. I can describe how I can create a COG, parquet, or pmtiles file.
+
+**Green** = confident &nbsp;|&nbsp; **Yellow** = mostly &nbsp;|&nbsp; **Red** = still unclear
+
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+
+<img src="../static/img/traffic-check-in.png" alt="Traffic light check-in QR code" style="max-width:100%;max-height:420px;">
+
+</div>
+</div>
+
+
+Note:
+Adjustment rules: Statement 1 mostly red/yellow → open a browser network inspector at the start of Demo 1, show the HTTP 206 range request headers live before running any code. Statement 2 uncertain → redraw the pipeline on the board: ogr2ogr (PostGIS → GeoJSON) → tippecanoe (GeoJSON → PMTiles) → mc cp (PMTiles → MinIO). Statement 3 mostly uncertain → during We Do Step 4, ask each participant to name one dataset from their Day 1 exit ticket and apply the decision framework. Statement 4 confused → return to the decision table and ask "how often does this data change?" — emphasise that PMTiles and COG require regenerating the file on every update. Statement 5 confused → in Demo 3, open a GeoNode resource page and a STAC item JSON side by side and narrate the structural comparison. Statement 6 unclear → show the MinIO web UI at localhost:9001 alongside the boto3/s3fs command used in Demo 4 and point to the one-line endpoint change that switches between MinIO and AWS S3.
+
+---
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+<span class="section-label">Hands-on Demo</span>
+# Demo
+
+<img src="../static/img/bnhr-2024-fordarkbg-main-720.png" class="title-logo" alt="BNHR">
+
+---
+
+## Demo flow: from local object storage to cloud-native performance
+
+<bnhr-pipeline>Deploy MinIO, COG vs WMS/WCS, pmtiles vs GeoJSON/WFS, Creating cloud-native files</bnhr-pipeline>
+
+Note:
+Walk participants through the four demo steps in order. Each builds on the previous — MinIO must be running before any format demos can happen. Keep explanations short; let the performance difference speak for itself before explaining why.
+
+---
+
+## part 1.1: local object storage with MinIO
+
+- MinIO can be run using Docker — access the console at `localhost:9001`
+- MinIO acts as a local S3-compatible object storage for all demos
+- Download the `docker-compose-minio-mc.yml` file.
+- Run MinIO with:
+
+```
+docker compose -f docker-compose-minio-mc.yml up -d
+```
+
+Note:
+Spin this up before the session starts. Participants should be able to open localhost:9001 in their browser and see the MinIO console. Confirm buckets and sample data are visible before proceeding to the format demos.
+
+---
+
+## part 1.2: local minio
+
+<img src="../static/img/minio-home.png"/>
+
+---
+
+## part 1.3: upload data to MinIO
+
+- create 3 folders (cog, parquet, pmtiles)
+- upload data (e.g. provided data) into each of them according to their format
+- Sample directory structure should be like:
+
+```
+psa-afcd
+  - cog
+      - intramuros.tif
+      - up-urban-farm.tif
+  - parquet
+      - phl_adm4.parquet
+  - pmtiles
+      - phl_adm.pmtiles
+      - phl_adm3.pmtiles 
+      - phl_adm4.pmtiles
+```
+
+
+---
+
+## part 2: COG vs WMS/WCS — raster performance in QGIS
+
+- Upload the **same raster dataset** to GeoNode and MinIO.
+- Open QGIS.
+- Load the **same raster dataset** three ways.
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoNode (WMS & WCS)</div>
+Connect WMS and WCS service in QGIS Browser
+
+```
+http://localhost/geoserver/geonode/[service]
+```
+
+Fetches the full rendered image per request
+
+</div>
+<div class="column">
+<div class="column-header">COG from MinIO</div>
+Data Source Manager > Raster > Protocol ...
+
+```
+http://localhost:9000/psa-afcd/cog/up-urban-farm.tif
+```
+
+</div>
+</div>
+
+Pan and zoom to show the difference in load speed and responsiveness.
+
+Note:
+Key message: COG shifts the work from the server to the client and the network. Internal tiling and overviews mean QGIS can request only the pixels visible in the current viewport. Let participants observe the speed difference before explaining why — the experience lands better than the explanation.
+
+---
+
+## part 3: PMTiles vs GeoJSON/WFS — vector performance in a web map
+
+Load the **same vector dataset** two ways:
+
+<div class="two-column">
+<div class="column">
+<div class="column-header">GeoJSON via WFS</div>
+phl_adm3.geojson - 500MB+ size pre-upload to GeoNode
+
+Full dataset downloaded on load
+
+Slow at scale; GeoServer under load
+
+</div>
+<div class="column">
+<div class="column-header">PMTiles from MinIO</div>
+phl_adm3.pmtiles - 50MB size on MinIO
+
+Pre-tiled, single-file archive
+
+Range-request delivery — no tile server
+
+</div>
+</div>
+
+Compare rendering speed, tile loading behavior, and zoom-level responsiveness.
+
+Note:
+Key message: PMTiles removes the need for a tile server while outperforming WFS at scale. Emphasize: same MVT format as GeoServer vector tiles — different delivery path. The pmtiles.js library handles HTTP range requests transparently in the browser.
+
+---
+
+## Step 4.1.1: creating cloud-native formats - COG
+
+gdal (3.1+)
+```
+ gdal_translate input.tif output_cog.tif -of COG -co COMPRESS=LZW
+```
+
+rio-cogeo
+```
+rio cogeo create in.tif out.tif --cog-profile deflate
+```
+
+---
+
+## Step 4.1.2: creating cloud-native formats - COG
+
+validate (rio cogeo)
+```
+rio cogeo validate test.tif
+```
+
+---
+
+## Step 4.2.1: creating cloud-native formats - pmtiles
+
+- Install tippecanoe
+- tippecanoe works on Linux and OSX (no Windows)
+- On Windows, use wsl (Open your Ubuntu WSL)
+
+```
+git clone https://github.com/felt/tippecanoe.git
+cd tippecanoe
+make -j
+make install
+```
+
+Note:
+Key message: the conversion step is a one-time cost; the performance gains are permanent. Show how to upload the resulting files to MinIO using mc cp or boto3. Emphasize that these formats work with existing tools — no new stack required.
+
+---
+
+## Step 4.2.2: creating cloud-native formats - pmtiles
+
+```
+tippecanoe -o file.pmtiles [options] [file.json file.json.gz file.fgb ...]
+```
+
+Basic
+```
+tippecanoe -zg -o out.pmtiles --drop-densest-as-needed in.geojson
+```
+
+`-zg`: Automatically choose a maxzoom that should be sufficient to clearly distinguish the features and the detail within each feature 
+
+---
+
+## Step 4.2.3: creating cloud-native formats - pmtiles
+
+Admin boundaries (continuous polygons)
+```
+tippecanoe -zg -o out.pmtiles --coalesce-densest-as-needed --extend-zooms-if-still-dropping in.geojson
+```
+
+`--coalesce-densest-as-needed`: If the tiles are too big at low or medium zoom levels, merge as many features together as are necessary to allow tiles to be created with those features that are still distinguished
+
+`--extend-zooms-if-still-dropping`: If even the tiles at high zoom levels are too big, keep adding zoom levels until one is reached that can represent all the features
+
+---
+
+## Step 4.2.4: creating cloud-native formats - pmtiles
+
+Merge all PMTiles files in current folder into single file
+```
+tile-join -o merged.pmtiles *.pmtiles
+```
+
+`--coalesce-densest-as-needed`: If the tiles are too big at low or medium zoom levels, merge as many features together as are necessary to allow tiles to be created with those features that are still distinguished
+
+`--extend-zooms-if-still-dropping`: If even the tiles at high zoom levels are too big, keep adding zoom levels until one is reached that can represent all the features
+
+---
+
+<!-- .slide: class="section-slide" data-background-color="#0c2340" -->
+# <span style="color: #ffa500">Questions?</span>
+
+      </textarea>
+    </section>
+  </div>
+
+  <!-- Global footer -->
+  <div class="global-footer">
+    <span class="url">bnhr.xyz</span>
+    <span class="page-number"></span>
+    <img src="logo-logomark-lightbg.png" class="footer-logo" alt="">
+  </div>
+</div>
+
+<!-- Reveal.js + plugins (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/markdown/markdown.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js-copycode/plugin/copycode/copycode.js"></script>
+
+<script>
+/**
+ * <bnhr-csv> — Hand-drawn CSV file diagram with cropped-document feel.
+ *
+ * Renders tabular data as a sketched spreadsheet with wobbly hand-drawn
+ * grid lines and crisp text. The top shows a file tab; the bottom fades
+ * out with a gradient mask, suggesting the data continues beyond view.
+ *
+ * Usage in markdown:
+ *   <bnhr-csv file="commitments.csv" wrap="1,5">
+ *     id, commitment, actor, amount, timeline, quote
+ *     1, Infrastructure programme, Gov of SA, R1 trillion, 3 years, "invest over R1 trillion…"
+ *   </bnhr-csv>
+ *
+ * Attributes:
+ *   file  — optional filename label shown in the file tab (gray, monospace)
+ *   wrap  — comma-separated column indices (0-based) that wrap text instead
+ *           of clipping with ellipsis. Wrapped columns grow row height to fit.
+ *           Omitted = all columns clip.
+ *
+ * Text content:
+ *   One line per row, comma-separated. First line becomes the header row.
+ *   Supports basic quoted strings (commas inside quotes are preserved).
+ */
+class BnhrCsv extends HTMLElement {
+  connectedCallback() {
+    requestAnimationFrame(() => this._render());
+  }
+
+  static get observedAttributes() {
+    return ['file', 'wrap'];
+  }
+
+  attributeChangedCallback() {
+    if (this._rendered) this._render();
+  }
+
+  _parseLine(line) {
+    const cells = [];
+    let current = '';
+    let inQuotes = false;
+    for (const ch of line) {
+      if (ch === '"') { inQuotes = !inQuotes; current += ch; }
+      else if (ch === ',' && !inQuotes) { cells.push(current.trim()); current = ''; }
+      else { current += ch; }
+    }
+    cells.push(current.trim());
+    return cells;
+  }
+
+  // Seeded pseudo-random for consistent wobble across renders
+  _srand(seed, i) {
+    const x = Math.sin(seed * 127.1 + i * 311.7) * 43758.5453;
+    return (x - Math.floor(x)) * 2 - 1; // -1 to 1
+  }
+
+  // Draw a wobbly line as an SVG path with quadratic bezier segments
+  _wobbleLine(x1, y1, x2, y2, seed, wobbleAmt) {
+    const segments = 5;
+    const dx = (x2 - x1) / segments;
+    const dy = (y2 - y1) / segments;
+    const w = wobbleAmt || 4;
+
+    let d = `M${x1.toFixed(1)},${y1.toFixed(1)}`;
+    for (let i = 1; i <= segments; i++) {
+      const endX = x1 + dx * i + (i < segments ? this._srand(seed, i) * w * 0.3 : 0);
+      const endY = y1 + dy * i + (i < segments ? this._srand(seed, i + 50) * w * 0.3 : 0);
+      const cpX = x1 + dx * (i - 0.5) + this._srand(seed, i + 100) * w;
+      const cpY = y1 + dy * (i - 0.5) + this._srand(seed, i + 150) * w;
+      d += ` Q${cpX.toFixed(1)},${cpY.toFixed(1)} ${endX.toFixed(1)},${endY.toFixed(1)}`;
+    }
+    return d;
+  }
+
+  _render() {
+    const raw = this.textContent.trim();
+    if (!raw) return;
+
+    const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
+    const rows = lines.map(line => this._parseLine(line));
+    const numCols = Math.max(...rows.map(r => r.length));
+    const numRows = rows.length;
+
+    const filename = this.getAttribute('file') || '';
+    const seed = 42; // fixed seed for consistent wobble
+
+    // Parse wrap attribute: comma-separated 0-based column indices
+    const wrapAttr = this.getAttribute('wrap') || '';
+    const wrapCols = new Set(wrapAttr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n)));
+
+    // Column widths: proportional to max content, with minimum for headers
+    const colMaxChars = [];
+    for (let c = 0; c < numCols; c++) {
+      let max = 0;
+      for (const row of rows) {
+        const len = (row[c] || '').length;
+        if (len > max) max = len;
+      }
+      colMaxChars.push(Math.max(max, 4));
+    }
+    const paddedChars = colMaxChars.map(c => c + 3);
+    const totalChars = paddedChars.reduce((a, b) => a + b, 0);
+
+    // Layout — generous sizing for slide readability
+    const cellPadX = 18;
+    const baseCellH = 58;
+    const fileTabH = 44;
+    const fadeH = 36;
+    const insetX = 8;       // horizontal inset so wobble on left/right borders stays visible
+    const gridW = Math.max(800, totalChars * 13);
+    const totalW = gridW + insetX * 2;
+    const colWidths = paddedChars.map(c => (c / totalChars) * gridW);
+    const gridTop = fileTabH;
+
+    // Estimate row heights — wrapped columns may need taller rows
+    // approx chars per line = (colWidth - 2*cellPadX) / 10 (rough char width at 16pt mono)
+    const rowHeights = [];
+    for (let r = 0; r < numRows; r++) {
+      let maxH = baseCellH;
+      for (let c = 0; c < numCols; c++) {
+        if (!wrapCols.has(c)) continue;
+        const text = rows[r][c] || '';
+        const availW = colWidths[c] - 2 * cellPadX;
+        const charsPerLine = Math.max(1, Math.floor(availW / 10));
+        const lineCount = Math.ceil(text.length / charsPerLine);
+        if (lineCount > 1) {
+          const neededH = lineCount * 26 + 20; // 26px per line + padding
+          if (neededH > maxH) maxH = neededH;
+        }
+      }
+      rowHeights.push(maxH);
+    }
+
+    // Cumulative Y offsets for each row
+    const rowY = [gridTop];
+    for (let r = 0; r < numRows; r++) {
+      rowY.push(rowY[r] + rowHeights[r]);
+    }
+    const gridH = rowY[numRows] - gridTop;
+    const totalH = gridTop + gridH + fadeH;
+
+    // --- SVG wobbly grid lines ---
+    let paths = '';
+    const thin = 1.5;
+    const thick = 2.5;
+
+    const gL = insetX;           // grid left edge
+    const gR = insetX + gridW;   // grid right edge
+
+    // Top border
+    paths += `<path d="${this._wobbleLine(gL, gridTop, gR, gridTop, seed + 1, 5)}"
+      fill="none" stroke="#091A31" stroke-width="${thick}"/>`;
+
+    // Header separator
+    const hSepY = rowY[1];
+    paths += `<path d="${this._wobbleLine(gL, hSepY, gR, hSepY, seed + 2, 5)}"
+      fill="none" stroke="#091A31" stroke-width="${thick}"/>`;
+
+    // Internal horizontal lines
+    for (let r = 2; r <= numRows; r++) {
+      const y = rowY[r];
+      paths += `<path d="${this._wobbleLine(gL + 2, y, gR - 2, y, seed + r + 10, 4)}"
+        fill="none" stroke="#091A31" stroke-width="${thin}" opacity="0.4"/>`;
+    }
+
+    // Left border
+    paths += `<path d="${this._wobbleLine(gL + 1, gridTop, gL + 1, gridTop + gridH + fadeH, seed + 100, 4)}"
+      fill="none" stroke="#091A31" stroke-width="${thick}"/>`;
+
+    // Right border
+    paths += `<path d="${this._wobbleLine(gR - 1, gridTop, gR - 1, gridTop + gridH + fadeH, seed + 101, 4)}"
+      fill="none" stroke="#091A31" stroke-width="${thick}"/>`;
+
+    // Internal vertical lines
+    let x = gL;
+    for (let c = 1; c < numCols; c++) {
+      x += colWidths[c - 1];
+      paths += `<path d="${this._wobbleLine(x, gridTop + 2, x, gridTop + gridH + fadeH, seed + c + 200, 3.5)}"
+        fill="none" stroke="#091A31" stroke-width="${thin}" opacity="0.4"/>`;
+    }
+
+    // Header background (straight rect — wobble is on lines, not fills)
+    const headerBg = `<rect x="${gL + 2}" y="${gridTop + 2}" width="${gridW - 4}" height="${rowHeights[0] - 3}"
+      fill="#EBF6FF" rx="0"/>`;
+
+    // --- Text cells (crisp, no filter) ---
+    let cells = '';
+    for (let r = 0; r < numRows; r++) {
+      let cx = 0;
+      for (let c = 0; c < numCols; c++) {
+        const y = rowY[r];
+        const h = rowHeights[r];
+        const text = rows[r][c] || '';
+        const isHeader = r === 0;
+        const shouldWrap = wrapCols.has(c) && !isHeader;
+        cells += `<div style="position:absolute; left:${cx + insetX}px; top:${y}px; width:${colWidths[c]}px; height:${h}px;
+          display:flex; align-items:center; padding:0 ${cellPadX}px; box-sizing:border-box;
+          font-family:'Roboto Mono',monospace; font-size:${isHeader ? '17pt' : '16pt'};
+          font-weight:${isHeader ? '700' : '400'}; color:#091A31;
+          overflow:hidden;${shouldWrap
+            ? ' white-space:normal; word-break:break-word; line-height:1.4;'
+            : ' white-space:nowrap; text-overflow:ellipsis;'}">${text}</div>`;
+        cx += colWidths[c];
+      }
+    }
+
+    // File tab label
+    const fileLabel = filename
+      ? `<div style="position:absolute; left:${insetX + 4}px; top:8px;
+          font-family:'Roboto Mono',monospace; font-size:15pt; font-weight:600;
+          color:#888; letter-spacing:0.02em;">${filename}</div>`
+      : '';
+
+    // Gradient mask: solid through data, fading at the bottom
+    const solidPct = ((gridTop + gridH - fadeH) / totalH * 100).toFixed(0);
+
+    // Wrap in a scaling container that shrinks the component to fit the slide
+    const uid = Math.random().toString(36).slice(2, 8);
+    const innerId = `csv-inner-${uid}`;
+    const outerId = `csv-outer-${uid}`;
+
+    this.innerHTML = `
+      <div id="${outerId}" style="width:100%; margin:1em 0; overflow:visible;">
+        <div id="${innerId}" style="position:relative; width:${totalW}px; height:${totalH}px;
+          transform-origin:top left;
+          -webkit-mask-image:linear-gradient(to bottom, black 0%, black ${solidPct}%, transparent 100%);
+          mask-image:linear-gradient(to bottom, black 0%, black ${solidPct}%, transparent 100%);">
+          <svg width="${totalW + 4}" height="${totalH + 4}"
+            style="position:absolute; top:-2px; left:-2px; pointer-events:none; overflow:visible;">
+            ${headerBg}
+            ${paths}
+          </svg>
+          ${fileLabel}
+          ${cells}
+        </div>
+      </div>
+    `;
+
+    // Scale to fit available space — may need to re-run when slide becomes visible
+    const rescale = () => {
+      const outer = document.getElementById(outerId);
+      const inner = document.getElementById(innerId);
+      if (!outer || !inner) return;
+      const avail = outer.clientWidth;
+      if (avail === 0) return; // slide still hidden, skip
+      if (totalW > avail) {
+        const scale = avail / totalW;
+        inner.style.transform = `scale(${scale})`;
+        inner.style.height = `${totalH * scale}px`;
+      } else {
+        inner.style.transform = '';
+        inner.style.height = `${totalH}px`;
+      }
+    };
+
+    requestAnimationFrame(rescale);
+
+    // Re-measure when the container becomes visible or resizes.
+    // ResizeObserver fires when the slide transitions from hidden (0 width)
+    // to visible — works regardless of whether reveal.js has loaded yet.
+    const ro = new ResizeObserver(() => requestAnimationFrame(rescale));
+    ro.observe(document.getElementById(outerId));
+
+    this._rendered = true;
+  }
+}
+
+customElements.define('bnhr-csv', BnhrCsv);
+
+
+/**
+ * <bnhr-fanout> — Fan-out/fan-in diagram showing parallel subagent delegation.
+ *
+ * Usage in markdown:
+ *   <bnhr-fanout input="Main agent" output="Results merged">
+ *     Subagent: scrape source A
+ *     Subagent: scrape source B
+ *     Subagent: clean existing data
+ *   </bnhr-fanout>
+ *
+ *   <bnhr-fanout input="Main agent" output="Step 3: combine">
+ *     Subagent: code chunk 1
+ *     Subagent: code chunk 2
+ *     Subagent: code chunk 3
+ *   </bnhr-fanout>
+ *
+ * Attributes:
+ *   input       — label for the left (source) box
+ *   output      — label for the right (sink) box
+ *   input-color — background for input box (default: "#56ABE1")
+ *   output-color — background for output box (default: "#2EC4B6")
+ *
+ * Text content:
+ *   One line per parallel task. Each becomes a middle box.
+ */
+class BnhrFanout extends HTMLElement {
+  connectedCallback() {
+    requestAnimationFrame(() => this._render());
+  }
+
+  static get observedAttributes() {
+    return ['input', 'output', 'input-color', 'output-color'];
+  }
+
+  attributeChangedCallback() {
+    if (this._rendered) this._render();
+  }
+
+  _render() {
+    const raw = this.textContent.trim();
+    if (!raw) return;
+
+    const tasks = raw.split('\n').map(s => s.trim()).filter(Boolean);
+    const inputLabel = this.getAttribute('input') || 'Input';
+    const outputLabel = this.getAttribute('output') || 'Output';
+    const inputColor = this.getAttribute('input-color') || '#56ABE1';
+    const outputColor = this.getAttribute('output-color') || '#2EC4B6';
+
+    // Unique IDs per instance
+    const uid = Math.random().toString(36).slice(2, 8);
+
+    // Layout constants
+    const boxW = 220;
+    const boxH = 80;
+    const taskW = 360;
+    const taskH = 56;
+    const taskGap = 18;
+    const arrowGap = 80;
+
+    const n = tasks.length;
+    const tasksBlockH = n * taskH + (n - 1) * taskGap;
+    const totalH = Math.max(tasksBlockH, boxH) + 40;
+
+    const inputX = 0;
+    const inputY = (totalH - boxH) / 2;
+    const taskX = boxW + arrowGap;
+    const taskStartY = (totalH - tasksBlockH) / 2;
+    const outputX = taskX + taskW + arrowGap;
+    const outputY = (totalH - boxH) / 2;
+    const totalW = outputX + boxW;
+
+    // SVG arrow paths
+    const inputCx = inputX + boxW;
+    const inputCy = inputY + boxH / 2;
+    const outputCx = outputX;
+    const outputCy = outputY + boxH / 2;
+
+    let arrows = '';
+    for (let i = 0; i < n; i++) {
+      const ty = taskStartY + i * (taskH + taskGap) + taskH / 2;
+
+      // Fan-out: curved bezier from input to task
+      const cp1 = arrowGap * 0.55;
+      arrows += `<path d="M${inputCx},${inputCy} C${inputCx + cp1},${inputCy} ${taskX - cp1},${ty} ${taskX},${ty}"
+        fill="none" stroke="#091A31" stroke-width="2.5" marker-end="url(#arr-${uid})"/>`;
+
+      // Fan-in: curved bezier from task to output
+      const tx2 = taskX + taskW;
+      arrows += `<path d="M${tx2},${ty} C${tx2 + cp1},${ty} ${outputCx - cp1},${outputCy} ${outputCx},${outputCy}"
+        fill="none" stroke="#091A31" stroke-width="2.5" marker-end="url(#arr-${uid})"/>`;
+    }
+
+    // Task boxes — light blue-pale fill, subtle rounded border
+    const taskBoxes = tasks.map((t, i) => {
+      const ty = taskStartY + i * (taskH + taskGap);
+      return `<div style="position:absolute; left:${taskX}px; top:${ty}px; width:${taskW}px; height:${taskH}px;
+        display:flex; align-items:center; justify-content:center;
+        background:#EBF6FF; border:2.5px solid #B6DEFF; border-radius:10px;
+        font-size:19pt; color:#091A31; text-align:center; padding:0 20px; box-sizing:border-box;">${t}</div>`;
+    }).join('\n');
+
+    // Endpoint boxes — solid color, rounded, white monospace text
+    const renderBox = (x, y, color, label) => {
+      return `<div style="position:absolute; left:${x}px; top:${y}px; width:${boxW}px; height:${boxH}px;
+        display:flex; align-items:center; justify-content:center;
+        background:${color}; border-radius:12px;
+        font-family:'Roboto Mono',monospace; font-weight:600; font-size:21pt;
+        color:white; text-align:center; white-space:pre-line; padding:0 20px; box-sizing:border-box;
+        box-shadow:0 3px 12px rgba(9,26,49,0.12);">${label}</div>`;
+    };
+
+    this.innerHTML = `
+      <svg width="0" height="0" style="position:absolute;">
+        <defs>
+          <marker id="arr-${uid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#091A31"/>
+          </marker>
+        </defs>
+      </svg>
+      <div style="position:relative; width:${totalW}px; height:${totalH}px; margin:1em auto;">
+        <svg width="${totalW}" height="${totalH}" style="position:absolute; top:0; left:0; pointer-events:none;">
+          ${arrows}
+        </svg>
+        ${renderBox(inputX, inputY, inputColor, inputLabel)}
+        ${taskBoxes}
+        ${renderBox(outputX, outputY, outputColor, outputLabel)}
+      </div>
+    `;
+
+    this._rendered = true;
+  }
+}
+
+customElements.define('bnhr-fanout', BnhrFanout);
+
+
+/**
+ * <bnhr-heatmap> — Presence grid with column headers and row labels.
+ *
+ * Usage in markdown:
+ *   <bnhr-heatmap columns="Define, Find, Get, Verify, Clean, Analyse, Present"
+ *                highlight="Get, Clean">
+ *     Human only:    ●, ●, ,  ●, ,  ●, ●
+ *     AI can help:   ●, ●, ●, ●, ●, ●, ●
+ *     AI can do it:  , ,  ●, ,  ●, ,
+ *   </bnhr-heatmap>
+ *
+ * Attributes:
+ *   columns    — comma-separated column header names
+ *   highlight  — comma-separated column names to highlight (darker blue header)
+ *   row-label-width — CSS width for the row label column (default: "200px")
+ *
+ * Text content:
+ *   One line per row. Format: "Row Label: cell1, cell2, cell3, ..."
+ *   Non-empty cells get a dot (●). Empty cells are blank.
+ *   Dot color matches the column header color (highlighted or not).
+ *
+ * Row label colors cycle through the BNHR palette:
+ *   row 0 → navy (#091A31), row 1 → blue (#56ABE1), row 2 → gold (#D4A843),
+ *   row 3 → purple (#6B4C9A), row 4 → cyan (#2EC4B6), then repeats.
+ */
+class BnhrHeatmap extends HTMLElement {
+  connectedCallback() {
+    requestAnimationFrame(() => this._render());
+  }
+
+  static get observedAttributes() {
+    return ['columns', 'highlight', 'row-label-width'];
+  }
+
+  attributeChangedCallback() {
+    if (this._rendered) this._render();
+  }
+
+  _render() {
+    const raw = this.textContent.trim();
+    if (!raw) return;
+
+    const columns = (this.getAttribute('columns') || '').split(',').map(s => s.trim()).filter(Boolean);
+    const highlightAttr = (this.getAttribute('highlight') || '').toLowerCase();
+    const highlighted = new Set(highlightAttr.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+    const labelWidth = this.getAttribute('row-label-width') || '200px';
+
+    // Parse rows from text content
+    const rows = raw.split('\n').map(line => line.trim()).filter(Boolean).map(line => {
+      const colonIdx = line.indexOf(':');
+      if (colonIdx < 0) return null;
+      const label = line.substring(0, colonIdx).trim();
+      const cells = line.substring(colonIdx + 1).split(',').map(c => c.trim());
+      return { label, cells };
+    }).filter(Boolean);
+
+    const rowLabelColors = ['#091A31', '#56ABE1', '#D4A843', '#6B4C9A', '#2EC4B6'];
+    const gap = '4px';
+
+    // Column headers with downward caret
+    const headers = columns.map(name => {
+      const isHL = highlighted.has(name.toLowerCase());
+      const bg = isHL ? '#56ABE1' : '#B6DEFF';
+      const color = isHL ? 'white' : '#091A31';
+      return `<div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+        <div style="background:${bg}; color:${color}; font-weight:600; font-size:24pt; padding:18px 0; width:100%; text-align:center; border-radius:6px 6px 0 0;">${name}</div>
+        <div style="width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:14px solid ${bg};"></div>
+      </div>`;
+    }).join('\n');
+
+    // Data rows
+    const dataRows = rows.map((row, ri) => {
+      const bgColor = rowLabelColors[ri % rowLabelColors.length];
+      const isFirst = ri === 0;
+      const isLast = ri === rows.length - 1;
+      const labelRadius = isFirst ? 'border-radius:6px 0 0 0;' : isLast ? 'border-radius:0 0 0 6px;' : '';
+
+      const cellsHtml = columns.map((col, ci) => {
+        const val = (row.cells[ci] || '').trim();
+        const isHL = highlighted.has(col.toLowerCase());
+        const dotColor = isHL ? '#56ABE1' : '#091A31';
+        const dot = val ? `<span style="color:${dotColor};">●</span>` : '';
+        return `<div style="flex:1; background:#EBF6FF; padding:40px 0; text-align:center; font-size:28pt;">${dot}</div>`;
+      }).join('\n');
+
+      return `<div style="display:flex; gap:${gap}; margin-top:${gap};">
+        <div style="flex:0 0 ${labelWidth}; background:${bgColor}; color:white; font-weight:600; font-size:24pt; display:flex; align-items:center; padding:0 24px; ${labelRadius}">${row.label}</div>
+        ${cellsHtml}
+      </div>`;
+    }).join('\n');
+
+    this.innerHTML = `
+      <div style="width:92%; margin:1.2em auto 1.6em;">
+        <div style="display:flex; gap:${gap};">
+          <div style="flex:0 0 ${labelWidth};"></div>
+          ${headers}
+        </div>
+        ${dataRows}
+      </div>
+    `;
+
+    this._rendered = true;
+  }
+}
+
+customElements.define('bnhr-heatmap', BnhrHeatmap);
+
+
+/**
+ * <bnhr-pipeline> — Custom element for data pipeline chevron diagrams.
+ *
+ * Usage in markdown:
+ *   <bnhr-pipeline highlight="Get">Define, Find, Get, Verify, Clean, Analyse, Present</bnhr-pipeline>
+ *   <bnhr-pipeline highlight="Clean, Present">Define, Find, Get, Verify, Clean, Analyse, Present</bnhr-pipeline>
+ *   <bnhr-pipeline>Define, Find, Get, Verify, Clean</bnhr-pipeline>
+ *
+ * Attributes:
+ *   highlight  — comma-separated step names to highlight (darker blue, white text)
+ *   caption    — per-step annotations, pipe-separated. Format:
+ *                "StepName: annotation text | StepName: annotation text"
+ *                If no step prefix, annotation is placed under the highlighted group.
+ *                Text wraps naturally. A vertical line connects each annotation to its step.
+ *
+ * Examples:
+ *   caption="Get: Manual PDF parsing replaced by LLM extraction"
+ *   caption="Clean: AI summarises transcripts | Present: Generates email digests"
+ *   caption="Both steps use constrained AI"   (no prefix — centered under highlights)
+ */
+class BnhrPipeline extends HTMLElement {
+  connectedCallback() {
+    requestAnimationFrame(() => this._render());
+  }
+
+  static get observedAttributes() {
+    return ['highlight', 'caption'];
+  }
+
+  attributeChangedCallback() {
+    if (this._rendered) this._render();
+  }
+
+  disconnectedCallback() {
+    if (this._observer) { this._observer.disconnect(); this._observer = null; }
+  }
+
+  _render() {
+    const raw = this.textContent.trim();
+    if (!raw) return;
+
+    const steps = raw.split(',').map(s => s.trim()).filter(Boolean);
+    const highlightAttr = (this.getAttribute('highlight') || '').toLowerCase();
+    const highlighted = new Set(
+      highlightAttr.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+    );
+    const captionAttr = this.getAttribute('caption') || '';
+
+    // Clip-path polygons
+    const firstClip = 'polygon(0 0,calc(100% - 20px) 0,100% 50%,calc(100% - 20px) 100%,0 100%)';
+    const restClip = 'polygon(0 0,calc(100% - 20px) 0,100% 50%,calc(100% - 20px) 100%,0 100%,20px 50%)';
+
+    const highlightedIndices = [];
+
+    const blocks = steps.map((name, i) => {
+      const isHighlighted = highlighted.has(name.toLowerCase());
+      if (isHighlighted) highlightedIndices.push(i);
+      const clip = i === 0 ? firstClip : restClip;
+      const bg = isHighlighted ? '#56ABE1' : '#B6DEFF';
+      const color = isHighlighted ? 'white' : '#091A31';
+      const weight = isHighlighted ? '700' : '600';
+      const size = isHighlighted ? '22pt' : '20pt';
+      const padLeft = i === 0 ? '32px' : '44px';
+
+      return `<div style="background:${bg}; clip-path:${clip}; padding:24px 48px 24px ${padLeft}; text-align:center; font-family:'Roboto Mono',monospace; font-weight:${weight}; font-size:${size}; color:${color}; white-space:nowrap;">${name}</div>`;
+    }).join('\n');
+
+    this.innerHTML = `
+      <div style="position:relative; margin:1.5em 0;">
+        <div class="bnhr-pipeline-row" style="display:flex; align-items:center; justify-content:center; gap:6px;">
+          ${blocks}
+        </div>
+      </div>
+    `;
+
+    // Parse and position captions after layout
+    const captions = this._parseCaptions(captionAttr);
+    if (captions.length > 0) {
+      requestAnimationFrame(() => this._positionCaptions(captions, steps, highlightedIndices));
+    }
+
+    this._rendered = true;
+  }
+
+  _parseCaptions(attr) {
+    if (!attr) return [];
+    return attr.split('|').map(part => {
+      part = part.trim();
+      const colonIdx = part.indexOf(':');
+      if (colonIdx > 0) {
+        const step = part.substring(0, colonIdx).trim();
+        const text = part.substring(colonIdx + 1).trim();
+        return { step: step.toLowerCase(), text };
+      }
+      // No prefix — will be placed under the highlighted group
+      return { step: null, text: part };
+    }).filter(c => c.text);
+  }
+
+  _positionCaptions(captions, steps, highlightedIndices) {
+    const row = this.querySelector('.bnhr-pipeline-row');
+    if (!row) return;
+
+    const blocks = row.children;
+    const rowRect = row.getBoundingClientRect();
+
+    // If the slide is not visible yet (reveal.js hides inactive slides),
+    // getBoundingClientRect() returns zeros. Defer until visible.
+    if (rowRect.width === 0) {
+      if (this._observer) this._observer.disconnect();
+      this._observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          this._observer.disconnect();
+          this._observer = null;
+          this._positionCaptions(captions, steps, highlightedIndices);
+        }
+      });
+      this._observer.observe(this);
+      return;
+    }
+
+    const container = row.parentElement;
+    container.style.overflow = 'visible';
+
+    // Remove any previously positioned caption/line elements
+    container.querySelectorAll('.bnhr-caption, .bnhr-caption-line').forEach(el => el.remove());
+
+    // reveal.js scales slides via CSS transform. getBoundingClientRect()
+    // returns screen pixels (post-scale), but absolute positioning uses
+    // the container's local CSS pixels (pre-scale). Compute the ratio.
+    const scale = rowRect.width / row.offsetWidth;
+
+    // First pass: resolve each caption's anchor X in local CSS pixels
+    const resolved = [];
+    for (const caption of captions) {
+      let anchorX;
+      if (caption.step) {
+        const stepIdx = steps.findIndex(s => s.toLowerCase() === caption.step);
+        if (stepIdx < 0) continue;
+        const blockRect = blocks[stepIdx].getBoundingClientRect();
+        anchorX = ((blockRect.left + blockRect.right) / 2 - rowRect.left) / scale;
+      } else {
+        if (highlightedIndices.length === 0) continue;
+        const firstRect = blocks[highlightedIndices[0]].getBoundingClientRect();
+        const lastRect = blocks[highlightedIndices[highlightedIndices.length - 1]].getBoundingClientRect();
+        anchorX = ((firstRect.left + lastRect.right) / 2 - rowRect.left) / scale;
+      }
+      resolved.push({ ...caption, anchorX });
+    }
+
+    // Sort by position so we can calculate available width between captions
+    resolved.sort((a, b) => a.anchorX - b.anchorX);
+
+    // Wrapping rule: each caption's max-width is ~2 step-widths,
+    // capped by the space before the next caption so they never overlap.
+    // This keeps wrapping consistent whether there's 1 caption or 5.
+    const rowWidth = row.offsetWidth;
+    const stepWidth = rowWidth / steps.length;
+    const naturalWidth = stepWidth;
+
+    const lineW = 3;
+
+    for (let i = 0; i < resolved.length; i++) {
+      const { anchorX, text } = resolved[i];
+
+      const nextAnchorX = i < resolved.length - 1 ? resolved[i + 1].anchorX : rowWidth;
+      const maxWidth = Math.min(naturalWidth, nextAnchorX - anchorX - 24);
+
+      // Left edge aligned: both the vertical line and the caption border-left
+      // start at the same x so there's no visual break
+      const lineLeft = anchorX - lineW / 2;
+
+      // Vertical connector line — starts 2px inside the chevron so there's
+      // no visible gap between the block and the line
+      const line = document.createElement('div');
+      line.className = 'bnhr-caption-line';
+      line.style.cssText = `position:absolute; left:${lineLeft}px; top:calc(100% - 2px); width:${lineW}px; height:26px; background:#56ABE1;`;
+      container.appendChild(line);
+
+      // Caption text with left border continuing the line seamlessly
+      const captionEl = document.createElement('div');
+      captionEl.className = 'bnhr-caption';
+      captionEl.style.cssText = `position:absolute; left:${lineLeft}px; top:calc(100% + 24px); box-sizing:border-box; border-left:${lineW}px solid #56ABE1; padding:2px 0 2px 14px; font-size:18pt; color:#888; max-width:${maxWidth}px; line-height:1.4;`;
+      captionEl.textContent = text;
+      container.appendChild(captionEl);
+    }
+
+    // After layout, measure actual caption heights and reserve generous
+    // margin so subsequent content has clear separation from captions
+    requestAnimationFrame(() => {
+      const containerRect = container.getBoundingClientRect();
+      let maxBottom = 0;
+      container.querySelectorAll('.bnhr-caption').forEach(el => {
+        const r = el.getBoundingClientRect();
+        const bottom = r.bottom - containerRect.top;
+        if (bottom > maxBottom) maxBottom = bottom;
+      });
+      container.style.marginBottom = `${maxBottom - containerRect.height + 72}px`;
+    });
+
+    // Default margin before measurement completes
+    container.style.marginBottom = '120px';
+  }
+}
+
+customElements.define('bnhr-pipeline', BnhrPipeline);
+
+
+/**
+ * <bnhr-quadrant> — 2×2 quadrant diagram with labeled axes.
+ *
+ * Usage in markdown:
+ *   <bnhr-quadrant x-label="Representation" y-label="Structure"
+ *     tl="Erroneous data | hallucination | #D4A843"
+ *     tr="Good data || #2EC4B6"
+ *     bl="Useless data || #CC0000"
+ *     br="Messy data || #6B4C9A">
+ *   </bnhr-quadrant>
+ *
+ * Attributes:
+ *   x-label  — label for the horizontal axis (right arrow)
+ *   y-label  — label for the vertical axis (up arrow)
+ *   tl       — top-left quadrant: "Title | Subtitle | Color"
+ *   tr       — top-right quadrant: "Title | Subtitle | Color"
+ *   bl       — bottom-left quadrant: "Title | Subtitle | Color"
+ *   br       — bottom-right quadrant: "Title | Subtitle | Color"
+ *   size     — overall size in px (default: "540")
+ *
+ * Each quadrant value is pipe-separated: "Title | Subtitle | #hexcolor"
+ * Subtitle and color are optional. Default color is #56ABE1.
+ */
+class BnhrQuadrant extends HTMLElement {
+  connectedCallback() {
+    requestAnimationFrame(() => this._render());
+  }
+
+  static get observedAttributes() {
+    return ['x-label', 'y-label', 'tl', 'tr', 'bl', 'br', 'size'];
+  }
+
+  attributeChangedCallback() {
+    if (this._rendered) this._render();
+  }
+
+  _parseQuadrant(attr) {
+    if (!attr) return null;
+    const parts = attr.split('|').map(s => s.trim());
+    return {
+      title: parts[0] || '',
+      subtitle: parts[1] || '',
+      color: parts[2] || '#56ABE1'
+    };
+  }
+
+  _render() {
+    const xLabel = this.getAttribute('x-label') || '';
+    const yLabel = this.getAttribute('y-label') || '';
+    const size = parseInt(this.getAttribute('size') || '540', 10);
+
+    const quadrants = {
+      tl: this._parseQuadrant(this.getAttribute('tl')),
+      tr: this._parseQuadrant(this.getAttribute('tr')),
+      bl: this._parseQuadrant(this.getAttribute('bl')),
+      br: this._parseQuadrant(this.getAttribute('br'))
+    };
+
+    // Symmetric layout from axis crossing point
+    const gap = 36;          // breathing room between boxes and axis
+    const pad = 10;          // outer padding around quadrant area
+    const arrowExt = 20;     // how far arrows extend past boxes
+    const topMar = 36;       // space above boxes for arrow + label
+
+    // Axis crossing point — center of the box area (topMar to size-pad)
+    const crossX = size / 2;
+    const crossY = topMar + (size - pad - topMar) / 2;
+
+    // Quadrant box dimensions
+    const qW = crossX - pad - gap / 2;
+    const qH = (size - pad - topMar - gap) / 2;
+
+    // Diagonal stripes: semi-transparent color alternating with white
+    const stripes = (color) => {
+      return `repeating-linear-gradient(45deg, ${color}99 0px, ${color}99 10px, white 10px, white 20px)`;
+    };
+
+    // Unique filter ID per instance to avoid collisions
+    const filterId = `wobble-${Math.random().toString(36).slice(2, 8)}`;
+
+    const renderQ = (q, top, left) => {
+      if (!q) return '';
+      const subtitle = q.subtitle ? `<div style="color:#091A31; font-size:14pt; margin-top:2px; font-style:italic;">${q.subtitle}</div>` : '';
+      return `<div style="position:absolute; left:${left}px; top:${top}px; width:${qW}px; height:${qH}px; display:flex; align-items:center; justify-content:center; flex-direction:column; box-sizing:border-box;">
+        <div style="position:absolute; inset:-6px; background:${stripes(q.color)}; filter:url(#${filterId});"></div>
+        <div style="position:relative; background:rgba(255,255,255,0.85); padding:8px 16px; border-radius:6px; text-align:center;">
+          <div style="color:#091A31; font-weight:700; font-size:18pt; line-height:1.3;">${q.title}</div>
+          ${subtitle}
+        </div>
+      </div>`;
+    };
+
+    // Quadrant positions
+    const tlLeft = pad;
+    const tlTop = topMar;
+    const trLeft = crossX + gap / 2;
+    const trTop = topMar;
+    const blLeft = pad;
+    const blTop = crossY + gap / 2;
+    const brLeft = crossX + gap / 2;
+    const brTop = crossY + gap / 2;
+
+    // Total dimensions
+    const totalW = size + arrowExt + 14;
+    const totalH = size + 36;
+
+    this.innerHTML = `
+      <svg width="0" height="0" style="position:absolute;">
+        <filter id="${filterId}">
+          <feTurbulence type="turbulence" baseFrequency="0.015" numOctaves="3" seed="2" result="turbulence"/>
+          <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </svg>
+      <div style="position:relative; width:${totalW}px; height:${totalH}px; overflow:visible;">
+        <!-- Y axis -->
+        <div style="position:absolute; left:${crossX}px; top:6px; height:${size - 6}px; width:3px; background:#091A31;"></div>
+        <!-- X axis -->
+        <div style="position:absolute; top:${crossY}px; left:0; width:${size + arrowExt}px; height:3px; background:#091A31;"></div>
+        <!-- Y arrow -->
+        <div style="position:absolute; left:${crossX - 7}px; top:-2px; width:0; height:0; border-left:9px solid transparent; border-right:9px solid transparent; border-bottom:14px solid #091A31;"></div>
+        <!-- X arrow -->
+        <div style="position:absolute; left:${size + arrowExt}px; top:${crossY - 7}px; width:0; height:0; border-top:9px solid transparent; border-bottom:9px solid transparent; border-left:14px solid #091A31;"></div>
+        <!-- Y label -->
+        <div style="position:absolute; left:${crossX + 16}px; top:0; font-family:var(--font-title); font-size:17pt; font-weight:600; color:#56ABE1; white-space:nowrap;">${yLabel}</div>
+        <!-- X label -->
+        <div style="position:absolute; right:0; top:${size + 8}px; font-family:var(--font-title); font-size:17pt; font-weight:600; color:#56ABE1; white-space:nowrap;">${xLabel}</div>
+        <!-- Quadrants -->
+        ${renderQ(quadrants.tl, tlTop, tlLeft)}
+        ${renderQ(quadrants.tr, trTop, trLeft)}
+        ${renderQ(quadrants.bl, blTop, blLeft)}
+        ${renderQ(quadrants.br, brTop, brLeft)}
+      </div>
+    `;
+
+    this._rendered = true;
+  }
+}
+
+customElements.define('bnhr-quadrant', BnhrQuadrant);
+
+</script>
+
+<script>
+  Reveal.initialize({
+    width: 1920,
+    height: 1080,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0,
+    center: false,
+    display: 'flex',
+    hash: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    pdfSeparateFragments: false,
+    copycode: {
+      style: {
+        copybg: 'var(--bnhr-accent-orange)',
+        copiedbg: 'var(--bnhr-accent-green)',
+        copycolor: 'var(--bnhr-main-dark)',
+        copiedcolor: 'var(--bnhr-main-white)',
+      }
+    },
+    plugins: [RevealMarkdown, RevealNotes, RevealHighlight, CopyCode]
+  });
+
+  // Post-processor: add content-slide class to slides without an explicit type
+  Reveal.on('ready', () => {
+    const typeClasses = ['title-slide', 'section-slide', 'subsection-slide', 'toc-slide'];
+    document.querySelectorAll('.slides > section > section, .slides > section[data-markdown-parsed]').forEach(section => {
+      if (!typeClasses.some(c => section.classList.contains(c))) {
+        section.classList.add('content-slide');
+      }
+    });
+    updateFooter();
+  });
+
+  // Footer visibility and slide number
+  const globalFooter = document.querySelector('.global-footer');
+  const slideNumberEl = document.querySelector('.global-footer .page-number');
+  const darkClasses = ['title-slide', 'section-slide', 'subsection-slide'];
+
+  function updateFooter() {
+    const slide = Reveal.getCurrentSlide();
+    const isDark = darkClasses.some(c => slide.classList.contains(c));
+    globalFooter.classList.toggle('hidden', isDark);
+    slideNumberEl.textContent = Reveal.getSlidePastCount() + 1;
+  }
+
+  Reveal.on('slidechanged', updateFooter);
+</script>
+
+</body>
+</html>
