@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test your knowledge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;700;900&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0c2340;
+      --blue:   #3791e0;
+      --orange: #ffa500;
+      --green:  #589632;
+      --cream:  #f5f5f5;
+      --pale:   #EBF6FF;
+      --gray:   #888;
+      --red:    #CC0000;
+
+      /* derived */
+      --green-bg: #eef6e6;
+      --red-bg:   #ffeaea;
+      --radius:   10px;
+      --shadow:   0 2px 12px rgba(12,35,64,0.10);
+    }
+
+    body {
+      font-family: 'Albert Sans', sans-serif;
+      background: var(--cream);
+      color: var(--navy);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--navy);
+      color: #fff;
+      padding: 28px 40px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+    }
+    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.01em; line-height: 1.3; }
+    header p  { font-size: 0.82rem; opacity: 0.72; margin-top: 4px; }
+
+    .progress-bar-wrap {
+      margin-top: 14px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--orange);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .progress-label { font-size: 0.75rem; opacity: 0.65; margin-top: 6px; }
+
+    /* ── Main layout ── */
+    main { max-width: 780px; margin: 40px auto 0; padding: 0 20px; }
+
+    /* ── Section headers ── */
+    .section-header { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; }
+    .section-header h2 {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--navy); white-space: nowrap;
+    }
+    .section-header hr { flex: 1; border: none; border-top: 2px solid #dce3ea; }
+
+    /* ── Question card ── */
+    .question-card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 30px 24px;
+      margin-bottom: 18px;
+      border: 2px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .question-card.answered-correct { border-color: var(--green); background: var(--green-bg); }
+    .question-card.answered-wrong   { border-color: var(--red);   background: var(--red-bg); }
+
+    .question-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .q-number {
+      background: var(--navy); color: #fff;
+      font-size: 0.72rem; font-weight: 700;
+      padding: 3px 9px; border-radius: 99px; letter-spacing: 0.06em;
+    }
+    .q-topic { font-size: 0.72rem; color: var(--gray); font-style: italic; }
+
+    .question-text { font-size: 0.97rem; line-height: 1.65; font-weight: 500; margin-bottom: 18px; }
+    .question-text pre {
+      background: var(--pale); border: 1px solid #cce3f6;
+      border-radius: 6px; padding: 12px 14px; font-size: 0.85rem;
+      overflow-x: auto; margin: 10px 0;
+      font-family: 'Source Code Pro', monospace; line-height: 1.55;
+    }
+    .question-text code {
+      background: var(--pale); border: 1px solid #cce3f6;
+      border-radius: 4px; padding: 1px 5px; font-size: 0.88em;
+      font-family: 'Source Code Pro', monospace;
+    }
+
+    /* ── Options ── */
+    .options { display: flex; flex-direction: column; gap: 9px; }
+
+    .option-label {
+      display: flex; align-items: flex-start; gap: 12px;
+      cursor: pointer; padding: 11px 14px; border-radius: 8px;
+      border: 1.5px solid #d0d8e4; background: #fafbfc;
+      transition: background 0.15s, border-color 0.15s;
+      font-size: 0.91rem; line-height: 1.5;
+    }
+    .option-label:hover { background: var(--pale); border-color: var(--blue); }
+    .option-label input[type="radio"] { display: none; }
+
+    .option-letter {
+      min-width: 24px; height: 24px; border-radius: 50%;
+      background: #dce8f5; color: var(--navy);
+      font-size: 0.78rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* selected (before submit) */
+    .option-label.selected              { background: var(--pale); border-color: var(--blue); }
+    .option-label.selected .option-letter { background: var(--blue); color: #fff; }
+
+    /* post-submit answer states (applied only when answers are revealed) */
+    .option-label.correct-answer               { background: var(--green-bg); border-color: var(--green); }
+    .option-label.correct-answer .option-letter  { background: var(--green); color: #fff; }
+    .option-label.wrong-answer                 { background: var(--red-bg);   border-color: var(--red); }
+    .option-label.wrong-answer .option-letter    { background: var(--red);   color: #fff; }
+
+    /* ── Explanation ── */
+    .explanation {
+      display: none; margin-top: 14px; padding: 12px 14px;
+      border-radius: 7px; font-size: 0.86rem; line-height: 1.55;
+    }
+    .explanation.correct { background: #daefc8; color: #3a6020; border-left: 3px solid var(--green); }
+    .explanation.wrong   { background: #ffd6d6; color: #8b0000; border-left: 3px solid var(--red); }
+    .explanation .expl-label { font-weight: 700; margin-bottom: 4px; }
+    .explanation code {
+      background: rgba(0,0,0,0.07); border-radius: 3px; padding: 1px 4px; font-size: 0.9em;
+    }
+
+    /* ── Submit button ── */
+    .actions { display: flex; justify-content: center; margin: 40px 0 0; }
+
+    #submit-btn {
+      background: var(--navy); color: #fff; border: none;
+      padding: 15px 52px; font-size: 1rem; font-weight: 700;
+      border-radius: 8px; cursor: pointer; letter-spacing: 0.04em;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 14px rgba(12,35,64,0.22);
+    }
+    #submit-btn:hover  { background: var(--blue); }
+    #submit-btn:active { transform: scale(0.98); }
+    #submit-btn:disabled { background: var(--gray); cursor: not-allowed; }
+
+    /* ── Score panel ── */
+    #score-panel {
+      display: none; margin: 40px 0 0;
+      background: var(--navy); color: #fff;
+      border-radius: var(--radius); padding: 36px 32px;
+      text-align: center; box-shadow: var(--shadow);
+    }
+    .score-big { font-size: 4rem; font-weight: 900; line-height: 1; color: var(--orange); }
+    .score-label { font-size: 1rem; opacity: 0.75; margin-top: 6px; }
+
+    .score-breakdown {
+      display: flex; justify-content: center; gap: 40px;
+      margin-top: 24px; flex-wrap: wrap;
+    }
+    .breakdown-item .val { font-size: 1.6rem; font-weight: 800; }
+    .breakdown-item .lbl {
+      font-size: 0.75rem; opacity: 0.65;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    .score-message {
+      margin-top: 20px; font-size: 0.95rem; opacity: 0.85; line-height: 1.6;
+      max-width: 480px; margin-left: auto; margin-right: auto;
+    }
+
+    .section-scores {
+      display: flex; justify-content: center; gap: 16px;
+      margin-top: 22px; flex-wrap: wrap;
+    }
+    .section-score-chip {
+      background: rgba(255,255,255,0.12); border-radius: 8px;
+      padding: 10px 18px; font-size: 0.82rem;
+    }
+    .section-score-chip .chip-title {
+      font-weight: 700; font-size: 0.75rem; text-transform: uppercase;
+      letter-spacing: 0.07em; opacity: 0.7; margin-bottom: 4px;
+    }
+    .section-score-chip .chip-score { font-size: 1.1rem; font-weight: 800; color: var(--orange); }
+
+    /* ── Post-submit action buttons ── */
+    #post-actions {
+      display: none;
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    #post-actions .post-actions-label {
+      font-size: 0.8rem;
+      opacity: 0.65;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    #post-actions .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* shared button base */
+    #post-actions button {
+      padding: 11px 24px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.18s, color 0.18s, opacity 0.18s, transform 0.1s;
+      border: 2px solid transparent;
+    }
+    #post-actions button:active { transform: scale(0.97); }
+
+    /* Show Answers — primary */
+    #btn-show {
+      background: var(--orange);
+      color: var(--navy);
+      border-color: var(--orange);
+    }
+    #btn-show:hover { background: #e69400; border-color: #e69400; }
+
+    /* Hide Answers — secondary outlined */
+    #btn-hide {
+      display: none;
+      background: transparent;
+      color: #fff;
+      border-color: rgba(255,255,255,0.5);
+    }
+    #btn-hide:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
+
+    /* Skip — ghost */
+    #btn-skip {
+      background: transparent;
+      color: rgba(255,255,255,0.65);
+      border-color: transparent;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    #btn-skip:hover { color: #fff; }
+
+    /* Try Again — outlined */
+    #btn-retry {
+      background: transparent;
+      color: #fff;
+      border-color: rgba(255,255,255,0.5);
+    }
+    #btn-retry:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
+
+    /* ── Responsive ── */
+    @media (max-width: 540px) {
+      header { padding: 20px 18px 18px; }
+      main { padding: 0 12px; }
+      .question-card { padding: 20px 16px; }
+      .score-big { font-size: 3rem; }
+      #post-actions .btn-row { flex-direction: column; align-items: stretch; }
+      #post-actions button { text-align: center; }
+      .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .section-header h2 { white-space: normal; font-size: 0.72rem; }
+      .section-header hr { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Test your knowledge</h1>
+  <p>Introduction to Python, Arrays, and DataFrames | GeoPython, Machine Learning, and Deep Learning | Open Geospatial for Geodata Management and Engineering</p>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+  <div class="progress-label" id="progress-label">0 of 20 answered</div>
+</header>
+
+<main>
+  <!-- Score panel — visible after submit -->
+  <div id="score-panel">
+    <div class="score-big" id="score-pct">—</div>
+    <div class="score-label">overall score</div>
+    <div class="score-breakdown">
+      <div class="breakdown-item"><div class="val" id="score-correct">—</div><div class="lbl">Correct</div></div>
+      <div class="breakdown-item"><div class="val" id="score-wrong">—</div><div class="lbl">Wrong</div></div>
+      <div class="breakdown-item"><div class="val">20</div><div class="lbl">Total</div></div>
+    </div>
+    <div class="section-scores" id="section-scores"></div>
+    <div class="score-message" id="score-message"></div>
+
+    <!-- Post-submit choices -->
+    <div id="post-actions">
+      <div class="post-actions-label">What would you like to do next?</div>
+      <div class="btn-row">
+        <button id="btn-show">Show Answers</button>
+        <button id="btn-hide">Hide Answers</button>
+        <button id="btn-skip">Don't Show Answers</button>
+        <button id="btn-retry">Try Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Questions injected by JS -->
+  <div id="quiz-container"></div>
+
+  <div class="actions">
+    <button id="submit-btn" disabled>Submit Quiz</button>
+  </div>
+</main>
+
+<script>
+const QUESTIONS = [
+  // ── SESSION 1 ──────────────────────────────────────────────────────
+  {
+    id: 1, section: 'S1', topic: 'Python Basics',
+    text: 'What is the output of the following code?\n\n```python\nprint(type([1, 2, 3]))\n```',
+    options: ["<code>&lt;class 'tuple'&gt;</code>","<code>&lt;class 'list'&gt;</code>","<code>&lt;class 'array'&gt;</code>","<code>&lt;class 'set'&gt;</code>"],
+    answer: 1,
+    explanation: "<code>[1, 2, 3]</code> is a list literal. <code>type()</code> returns <code>&lt;class 'list'&gt;</code>."
+  },
+  {
+    id: 2, section: 'S1', topic: 'Python Basics',
+    text: 'What will the following code print?\n\n```python\nx = 4\nprint(x ** 3)\n```',
+    options: ['12','43','7','64'],
+    answer: 3,
+    explanation: 'The <code>**</code> operator is exponentiation. 4³ = 64.'
+  },
+  {
+    id: 3, section: 'S1', topic: 'Python Basics',
+    text: 'Which of the following correctly creates a <strong>set</strong> in Python?',
+    options: ["<code>s = [1, 2, 3]</code>","<code>s = (1, 2, 3)</code>","<code>s = {1: 'a', 2: 'b', 3: 'c'}</code>","<code>s = {1, 2, 3}</code>"],
+    answer: 3,
+    explanation: 'Curly braces with values (no key-value pairs) create a set. Curly braces with key-value pairs create a dictionary.'
+  },
+  {
+    id: 4, section: 'S1', topic: 'Functions',
+    text: 'What will the following function return when called as <code>greet()</code>?\n\n```python\ndef greet(name="World"):\n    return "Hello, " + name\n```',
+    options: ['<code>Hello, </code>','<code>Hello, name</code>','<code>Hello, World</code>','Error — missing argument'],
+    answer: 2,
+    explanation: '<code>"World"</code> is the default argument value. When no argument is passed, <code>name</code> takes the default and the function returns <code>"Hello, World"</code>.'
+  },
+  {
+    id: 5, section: 'S1', topic: 'NumPy Arrays',
+    text: 'What does <code>np.arange(0, 10, 2)</code> produce?',
+    options: ['<code>[0, 2, 4, 6, 8, 10]</code>','<code>[0, 2, 4, 6, 8]</code>','<code>[2, 4, 6, 8, 10]</code>','<code>[0, 1, 2, 3, 4]</code>'],
+    answer: 1,
+    explanation: '<code>np.arange(start, stop, step)</code> generates values from 0 up to (but not including) 10 in steps of 2: <code>[0, 2, 4, 6, 8]</code>.'
+  },
+  {
+    id: 6, section: 'S1', topic: 'NumPy Arrays',
+    text: 'Which NumPy attribute returns the <strong>total number of elements</strong> in an array?',
+    options: ['<code>.length</code>','<code>.count</code>','<code>.shape</code>','<code>.size</code>'],
+    answer: 3,
+    explanation: '<code>.size</code> returns the total element count. <code>.shape</code> returns a tuple of dimension sizes. NumPy arrays have no <code>.length</code> or <code>.count</code>.'
+  },
+  {
+    id: 7, section: 'S1', topic: 'Pandas DataFrames',
+    text: 'Which Pandas method removes rows with missing (<code>NaN</code>) values from a DataFrame?',
+    options: ['<code>.fillna()</code>','<code>.remove_nan()</code>','<code>.dropna()</code>','<code>.clean()</code>'],
+    answer: 2,
+    explanation: '<code>.dropna()</code> drops rows (or columns) containing <code>NaN</code>. <code>.fillna()</code> replaces them with a specified value instead.'
+  },
+  {
+    id: 8, section: 'S1', topic: 'Pandas DataFrames',
+    text: 'What does <code>df.shape</code> return for a DataFrame?',
+    options: ['The column names of the DataFrame','The data types of each column','A tuple of (number of rows, number of columns)','The index values of the DataFrame'],
+    answer: 2,
+    explanation: '<code>df.shape</code> returns a tuple like <code>(500, 8)</code> — rows first, columns second.'
+  },
+  {
+    id: 9, section: 'S1', topic: 'Pandas DataFrames',
+    text: "Which method sorts a DataFrame by the column <code>'yield_kg'</code> in <strong>descending</strong> order?",
+    options: ["<code>df.sort('yield_kg', reverse=True)</code>","<code>df.sort_values('yield_kg', ascending=False)</code>","<code>df.order_by('yield_kg', desc=True)</code>","<code>df.arrange('yield_kg', descending=True)</code>"],
+    answer: 1,
+    explanation: 'The correct Pandas method is <code>.sort_values()</code> with <code>ascending=False</code> for descending order.'
+  },
+  // ── SESSION 2 ──────────────────────────────────────────────────────
+  {
+    id: 10, section: 'S2', topic: 'Geospatial Python',
+    text: 'Which GeoDataFrame method is used to reproject data to a different coordinate reference system?',
+    options: ['<code>.reproject()</code>','<code>.set_epsg()</code>','<code>.transform_crs()</code>','<code>.to_crs()</code>'],
+    answer: 3,
+    explanation: '<code>.to_crs(epsg=XXXX)</code> or <code>.to_crs("EPSG:XXXX")</code> reprojects a GeoDataFrame to the target CRS.'
+  },
+  {
+    id: 11, section: 'S2', topic: 'Geospatial Python',
+    text: 'When called on geometry A, which Shapely method returns <code>True</code> if A is completely inside geometry B?',
+    options: ['<code>A.contains(B)</code>','<code>A.intersects(B)</code>','<code>A.within(B)</code>','<code>A.overlaps(B)</code>'],
+    answer: 2,
+    explanation: '<code>A.within(B)</code> returns <code>True</code> if A is fully inside B. Note: <code>A.contains(B)</code> is the inverse — it checks whether A contains B.'
+  },
+  {
+    id: 12, section: 'S2', topic: 'Geospatial Python',
+    text: 'What does <code>dataset.read(1)</code> return when called on a Rasterio dataset object?',
+    options: ['The first row of the raster as a Python list','Metadata for the first band','The CRS of the raster dataset','A 2D NumPy array of pixel values for band 1'],
+    answer: 3,
+    explanation: '<code>dataset.read(band_index)</code> reads a band into a 2D NumPy array. Band indices in Rasterio start at 1, so <code>read(1)</code> returns band 1.'
+  },
+  {
+    id: 13, section: 'S2', topic: 'Machine Learning',
+    text: 'What is the purpose of applying <code>StandardScaler</code> to features before training a machine learning model?',
+    options: ['To convert categorical features into numeric values','To split the dataset into training and testing sets','To standardize features so they have a mean of 0 and standard deviation of 1, improving model performance','To remove features that contain missing values'],
+    answer: 2,
+    explanation: '<code>StandardScaler</code> normalizes features to mean=0, std=1. This prevents features with large ranges from dominating distance-based or gradient-based algorithms.'
+  },
+  {
+    id: 14, section: 'S2', topic: 'Machine Learning',
+    text: 'Which of the following algorithms is used for <strong>classification</strong> tasks?',
+    options: ['Linear Regression','K-Means Clustering','Random Forest Classifier','Principal Component Analysis (PCA)'],
+    answer: 2,
+    explanation: 'Random Forest Classifier predicts discrete class labels. Linear Regression predicts continuous values; K-Means and PCA are unsupervised methods.'
+  },
+  {
+    id: 15, section: 'S2', topic: 'Deep Learning',
+    text: 'In deep learning, what is a <strong>"batch size"</strong>?',
+    options: ['The total number of training epochs','The number of hidden layers in the network','The learning rate applied during gradient descent','The number of training samples processed in one forward/backward pass'],
+    answer: 3,
+    explanation: 'A batch is a subset of the training data. Batch size controls how many samples are processed before the model weights are updated in each step.'
+  },
+  {
+    id: 16, section: 'S2', topic: 'Deep Learning',
+    text: "What is the role of a <strong>loss function</strong> in training a neural network?",
+    options: ["To initialize the weights of the network before training","To measure how far the model's predictions are from the true values","To define the number of layers and neurons in the network","To apply dropout regularization during each epoch"],
+    answer: 1,
+    explanation: 'The loss function quantifies prediction error. The optimizer adjusts weights to minimize this loss (e.g., cross-entropy for classification, MSE for regression).'
+  },
+  // ── SESSION 3 ──────────────────────────────────────────────────────
+  {
+    id: 17, section: 'S3', topic: 'PostGIS',
+    text: 'Which PostGIS function returns the <strong>length</strong> of a LineString geometry?',
+    options: ['<code>ST_Area()</code>','<code>ST_Perimeter()</code>','<code>ST_Distance()</code>','<code>ST_Length()</code>'],
+    answer: 3,
+    explanation: '<code>ST_Length(geom)</code> returns the 2D length of a LineString. <code>ST_Area()</code> is for polygons; <code>ST_Distance()</code> measures distance between two geometries.'
+  },
+  {
+    id: 18, section: 'S3', topic: 'GeoServer',
+    text: 'In GeoServer, which OGC service delivers <strong>pre-tiled, cached map images</strong> optimized for fast rendering in web applications?',
+    options: ['WMS','WFS','WCS','WMTS'],
+    answer: 3,
+    explanation: 'WMTS (Web Map Tile Service) serves pre-rendered, cached tiles. WMS renders on-the-fly; WFS delivers raw vector features; WCS covers raster coverage data.'
+  },
+  {
+    id: 19, section: 'S3', topic: 'Docker / Deployment',
+    text: 'What is the primary role of <strong>Docker</strong> in the AFCD open geospatial stack deployment?',
+    options: ['To style and render geospatial layers in a web browser','To serve as the spatial database backend for storing geometries','To containerize and consistently deploy services like PostGIS, GeoServer, and GeoNode','To catalog and manage metadata for geospatial datasets'],
+    answer: 2,
+    explanation: 'Docker packages each service into isolated containers, making the stack portable and reproducible across environments.'
+  },
+  {
+    id: 20, section: 'S3', topic: 'Cloud Native Geospatial',
+    text: '<strong>PMTiles</strong> is a single-file archive format for map tiles. What is its main advantage for the AFCD open stack?',
+    options: ['It replaces PostGIS as the spatial database for storing feature data','It requires a dedicated tile server to serve tiles to client applications','It is identical to a COG file but optimized for vector data','It can be served directly from static file hosting without a dedicated tile server'],
+    answer: 3,
+    explanation: 'PMTiles uses HTTP range requests so tiles can be fetched from any static file host (S3, GitHub Pages, etc.) — no tile server process needed.'
+  }
+];
+
+// ── State ──────────────────────────────────────────────────────────────
+const userAnswers = new Array(QUESTIONS.length).fill(null);
+let submitted     = false;
+let answersShown  = false;
+
+// Stores per-question result data, populated on submit, applied on show
+const resultData = [];
+
+// ── Render questions ───────────────────────────────────────────────────
+const container = document.getElementById('quiz-container');
+const SECTIONS = [
+  { id: 'S1', label: 'Session 1 — Introduction to Python, Arrays, and DataFrames' },
+  { id: 'S2', label: 'Session 2 — Geospatial Python, Machine Learning, and Deep Learning' },
+  { id: 'S3', label: 'Session 3 — Geodata Management and Engineering' }
+];
+
+let lastSection = null;
+QUESTIONS.forEach((q, idx) => {
+  if (q.section !== lastSection) {
+    const sec = SECTIONS.find(s => s.id === q.section);
+    const hdr = document.createElement('div');
+    hdr.className = 'section-header';
+    hdr.innerHTML = `<h2>${sec.label}</h2><hr/>`;
+    container.appendChild(hdr);
+    lastSection = q.section;
+  }
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.id = `card-${idx}`;
+
+  const formattedText = q.text
+    .replace(/```python\n([\s\S]*?)```/g, (_, c) => `<pre>${escHtml(c.trimEnd())}</pre>`)
+    .replace(/```([\s\S]*?)```/g,         (_, c) => `<pre>${escHtml(c.trimEnd())}</pre>`);
+
+  const optHtml = q.options.map((opt, oi) => `
+    <label class="option-label" id="opt-${idx}-${oi}" for="r-${idx}-${oi}">
+      <input type="radio" name="q${idx}" id="r-${idx}-${oi}" value="${oi}" />
+      <span class="option-letter">${'ABCD'[oi]}</span>
+      <span>${opt}</span>
+    </label>`).join('');
+
+  card.innerHTML = `
+    <div class="question-meta">
+      <span class="q-number">Q${String(q.id).padStart(2,'0')}</span>
+      <span class="q-topic">${q.topic}</span>
+    </div>
+    <div class="question-text">${formattedText}</div>
+    <div class="options" id="options-${idx}">${optHtml}</div>
+    <div class="explanation" id="expl-${idx}">
+      <div class="expl-label"></div>
+      <div class="expl-body"></div>
+    </div>`;
+  container.appendChild(card);
+
+  q.options.forEach((_, oi) => {
+    document.getElementById(`r-${idx}-${oi}`).addEventListener('change', () => {
+      if (submitted) return;
+      userAnswers[idx] = oi;
+      q.options.forEach((_, j) =>
+        document.getElementById(`opt-${idx}-${j}`).classList.toggle('selected', j === oi));
+      updateProgress();
+      checkSubmitReady();
+    });
+  });
+});
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Progress ───────────────────────────────────────────────────────────
+function updateProgress() {
+  const n = userAnswers.filter(a => a !== null).length;
+  document.getElementById('progress-fill').style.width = (n / QUESTIONS.length * 100) + '%';
+  document.getElementById('progress-label').textContent = `${n} of ${QUESTIONS.length} answered`;
+}
+function checkSubmitReady() {
+  document.getElementById('submit-btn').disabled = !userAnswers.every(a => a !== null);
+}
+
+// ── Apply / remove answer highlights ──────────────────────────────────
+function applyAnswerHighlights() {
+  resultData.forEach(({ idx, isCorrect, chosen }) => {
+    const card = document.getElementById(`card-${idx}`);
+    card.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+
+    QUESTIONS[idx].options.forEach((_, oi) => {
+      const lbl = document.getElementById(`opt-${idx}-${oi}`);
+      lbl.classList.remove('selected');
+      if (oi === QUESTIONS[idx].answer) lbl.classList.add('correct-answer');
+      else if (oi === chosen && !isCorrect) lbl.classList.add('wrong-answer');
+    });
+
+    const expl = document.getElementById(`expl-${idx}`);
+    expl.style.display = 'block';
+  });
+}
+
+function removeAnswerHighlights() {
+  resultData.forEach(({ idx, chosen }) => {
+    const card = document.getElementById(`card-${idx}`);
+    card.classList.remove('answered-correct', 'answered-wrong');
+
+    QUESTIONS[idx].options.forEach((_, oi) => {
+      const lbl = document.getElementById(`opt-${idx}-${oi}`);
+      lbl.classList.remove('correct-answer', 'wrong-answer');
+      // restore the user's original selection highlight
+      if (oi === chosen) lbl.classList.add('selected');
+    });
+
+    document.getElementById(`expl-${idx}`).style.display = 'none';
+  });
+}
+
+// ── Submit ─────────────────────────────────────────────────────────────
+document.getElementById('submit-btn').addEventListener('click', () => {
+  if (submitted) return;
+  submitted = true;
+  document.getElementById('submit-btn').style.display = 'none';
+
+  let correct = 0;
+  const sectionTotals = { S1:{c:0,t:0}, S2:{c:0,t:0}, S3:{c:0,t:0} };
+
+  QUESTIONS.forEach((q, idx) => {
+    const chosen    = userAnswers[idx];
+    const isCorrect = chosen === q.answer;
+    if (isCorrect) correct++;
+    sectionTotals[q.section].t++;
+    if (isCorrect) sectionTotals[q.section].c++;
+
+    // Disable radios
+    document.querySelectorAll(`input[name="q${idx}"]`).forEach(r => r.disabled = true);
+
+    // Pre-populate explanation content (hidden until revealed)
+    const expl = document.getElementById(`expl-${idx}`);
+    expl.classList.add(isCorrect ? 'correct' : 'wrong');
+    expl.querySelector('.expl-label').textContent = isCorrect ? '✓ Correct' : '✗ Incorrect';
+    expl.querySelector('.expl-body').innerHTML = q.explanation;
+    expl.style.display = 'none'; // stays hidden until user chooses
+
+    // Store for later use by show/hide
+    resultData.push({ idx, isCorrect, chosen });
+  });
+
+  // Populate score panel
+  const pct = Math.round(correct / QUESTIONS.length * 100);
+  document.getElementById('score-pct').textContent     = pct + '%';
+  document.getElementById('score-correct').textContent = correct;
+  document.getElementById('score-wrong').textContent   = QUESTIONS.length - correct;
+
+  const sLabels = { S1:'Session 1', S2:'Session 2', S3:'Session 3' };
+  document.getElementById('section-scores').innerHTML =
+    Object.entries(sectionTotals).map(([k,v]) => `
+      <div class="section-score-chip">
+        <div class="chip-title">${sLabels[k]}</div>
+        <div class="chip-score">${v.c}/${v.t}</div>
+      </div>`).join('');
+
+  const msgs = [
+    [90, 'Excellent work! You have a strong command of the material.'],
+    [75, "Good job! Review the items you missed and you'll be well prepared."],
+    [55, 'Decent start. Focus on the highlighted questions and re-read those sections.'],
+    [0,  'Keep studying — review each section carefully and try again.']
+  ];
+  document.getElementById('score-message').textContent = msgs.find(([t]) => pct >= t)[1];
+
+  // Show score panel and post-action buttons
+  const panel = document.getElementById('score-panel');
+  panel.style.display = 'block';
+  document.getElementById('post-actions').style.display = 'flex';
+  panel.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-label').textContent = 'Quiz submitted';
+});
+
+// ── Show Answers ───────────────────────────────────────────────────────
+document.getElementById('btn-show').addEventListener('click', () => {
+  if (answersShown) return;
+  answersShown = true;
+  applyAnswerHighlights();
+  document.getElementById('btn-show').style.display = 'none';
+  document.getElementById('btn-skip').style.display = 'none';
+  document.getElementById('btn-hide').style.display = 'inline-block';
+  // Scroll to first question so user sees the highlighted answers
+  document.getElementById('quiz-container').scrollIntoView({ behavior:'smooth', block:'start' });
+});
+
+// ── Hide Answers ───────────────────────────────────────────────────────
+document.getElementById('btn-hide').addEventListener('click', () => {
+  if (!answersShown) return;
+  answersShown = false;
+  removeAnswerHighlights();
+  document.getElementById('btn-hide').style.display = 'none';
+  document.getElementById('btn-show').style.display = 'inline-block';
+  document.getElementById('btn-skip').style.display = 'inline-block';
+});
+
+// ── Don't Show Answers ─────────────────────────────────────────────────
+document.getElementById('btn-skip').addEventListener('click', () => {
+  document.getElementById('btn-show').style.display = 'none';
+  document.getElementById('btn-skip').style.display = 'none';
+  // Try Again remains visible
+});
+
+// ── Try Again ──────────────────────────────────────────────────────────
+document.getElementById('btn-retry').addEventListener('click', () => location.reload());
+</script>
+</body>
+</html>
